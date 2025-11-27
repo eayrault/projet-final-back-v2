@@ -1,0 +1,46 @@
+{
+	"name": "projet-final-back-v2",
+	"version": "1.0.0",
+	"description": "",
+	"homepage": "https://github.com/eayrault/projet-final-back-v2#readme",
+	"bugs": {
+		"url": "https://github.com/eayrault/projet-final-back-v2/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/eayrault/projet-final-back-v2.git"
+	},
+	"license": "ISC",
+	"author": "Eliot AYRAULT",
+	"type": "commonjs",
+	"main": "index.js",
+	"scripts": {
+		"build": "tsc",
+		"lint": "biome lint",
+		"format": "biome format --write",
+		"autofix": "biome check --write",
+		"test": "vitest run",
+		"start": "docker compose -f .\\docker\\docker-compose.yml up -d",
+		"down": "docker compose -f .\\docker\\docker-compose.yml down && docker volume rm wap201_pg_data",
+		"psql": "docker compose -f .\\docker\\docker-compose.yml exec db psql -U toto",
+		"restart": "docker compose -f .\\docker\\docker-compose.yml restart"
+	},
+	"dependencies": {
+		"@fastify/cookie": "^11.0.2",
+		"dotenv": "^17.2.3",
+		"fastify": "^5.6.2",
+		"fastify-type-provider-zod": "^6.1.0",
+		"jsonwebtoken": "^9.0.2",
+		"node-crypto": "^1.0.0",
+		"postgres": "^3.4.7",
+		"zod": "^4.1.13",
+		"zod-validation-error": "^5.0.0"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.3.8",
+		"@tsconfig/node22": "^22.0.5",
+		"@types/node": "^24.10.1",
+		"typescript": "^5.9.3",
+		"vitest": "^4.0.14"
+	}
+}
