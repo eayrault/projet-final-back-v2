@@ -4,6 +4,7 @@ import {
   serializerCompiler,
   validatorCompiler,
 } from "fastify-type-provider-zod";
+import authRoutes from "./routes/auth.js";
 
 try {
   process.loadEnvFile();
@@ -16,9 +17,8 @@ const app = fastify();
 app.setValidatorCompiler(validatorCompiler);
 app.setSerializerCompiler(serializerCompiler);
 
-app.register(cookie, {
-  secret: `${process.env.JWT_SECRET}`,
-});
+app.register(authRoutes, { prefix: "/auth" });
+
 
 app.setErrorHandler((error: FastifyError, _request, reply) => {
   app.log.error(error);

@@ -11,6 +11,7 @@ services:
     environment:
       POSTGRES_PASSWORD: motdepasse
       POSTGRES_USER: eliot
+      POSTGRES_DB: projet-final-back
 
 volumes:
   pg_data:
