@@ -1,12 +1,19 @@
-import cookie from "@fastify/cookie";
-import type { FastifyInstance, FastifyReply, FastifyRequest, FastifySchema } from "fastify";
+import type {
+  FastifyInstance,
+  FastifyReply,
+  FastifyRequest,
+  FastifySchema,
+} from "fastify";
 import sql from "../db/db.js";
 import {
+  createRefreshToken,
+  authenticate,
   generateToken,
   hashPassword,
+  revokeRefreshToken,
   type UserPayload,
   verifyPassword,
-  verifyToken,
+  verifyRefreshToken,
 } from "../plugins/auth.js";
 import {
   UserLoginSchema,
@@ -16,6 +23,7 @@ import {
   type UserLogin,
 } from "../models/User.js";
 import { ZodTypeProvider } from "fastify-type-provider-zod";
+import { hash } from "crypto";
 
 interface UserInterface {
   id: string;
@@ -29,7 +37,7 @@ interface UserInterface {
 }
 
 export default async function authRoutes(app: FastifyInstance) {
-  app.post<{ Body: UserRegister }>(
+  app.withTypeProvider<ZodTypeProvider>().post<{ Body: UserRegister }>(
     "/register",
     {
       schema: {
@@ -37,35 +45,46 @@ export default async function authRoutes(app: FastifyInstance) {
         response: {
           201: UserSchema.omit({ password: true }),
         },
-      } as FastifySchema,
+      },
     },
     async (request, reply) => {
       const { username, first_name, last_name, email, password } = request.body;
 
-      const existingUser = (await sql`
+      const existingUser = await sql`
         SELECT * FROM users WHERE email = ${email}
-      `) as UserInterface[];
+      `;
       if (existingUser.length > 0) {
         return reply.status(400).send({ message: "Email already in use" });
       }
 
       const hashedPassword = await hashPassword(password);
 
-      const newUser = await sql`
-                INSERT INTO users (username, first_name, last_name, email, password)
-                VALUES (${username}, ${first_name}, ${last_name}, ${email}, ${hashedPassword})
-                RETURNING id, username, first_name, last_name, email, created_at, updated_at            `;
+      const newUser = await sql.begin(async (sql) => {
+        const [user] = await sql<UserInterface[]>`
+        INSERT INTO users (username, first_name, last_name)
+        VALUES (${username}, ${first_name}, ${last_name})
+        RETURNING *
+      `;
 
-      return reply.status(201).send(newUser[0]);
+        await sql`
+        INSERT INTO user_auth (user_id, email, password_hash)
+        VALUES (${user.id}, ${email}, ${hashedPassword})
+      `;
+
+        return { ...user, email };
+      });
+
+      return reply.status(201).send(newUser);
     }
   );
 
-  app.post<{ Body: UserLogin }>(
+  app.withTypeProvider<ZodTypeProvider>().post<{ Body: UserLogin }>(
     "/login",
     {
       schema: {
         body: UserLoginSchema,
-      } as FastifySchema,
+        response: { 200: UserSchema.omit({ password: true }) },
+      },
     },
     async (request, reply) => {
       const { email, password } = request.body;
@@ -82,60 +101,57 @@ export default async function authRoutes(app: FastifyInstance) {
         return reply.status(400).send({ message: "Invalid email or password" });
       }
 
-      const payload: UserPayload = {
+      const accessToken = await generateToken({
         userId: user.id,
         username: user.username,
         role: user.role,
-      };
-
-      const token = await generateToken(payload);
-
-      reply.setCookie("token", token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
-        maxAge: 3600,
       });
 
-      return reply.send({ message: "Login successful" });
+      const refreshToken = await createRefreshToken(user.id);
+
+      return reply.send({ accessToken, refreshToken });
     }
   );
 
-  app.post("/logout", async (request: FastifyRequest, reply: FastifyReply) => {
-    reply.clearCookie("token", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-    });
-    return reply.send({ message: "Logout successful" });
-  });
+  app
+    .withTypeProvider<ZodTypeProvider>()
+    .post("/logout", async (request: FastifyRequest, reply: FastifyReply) => {
+      const { token } = request.cookies;
 
-  app.post("/refresh", async (request: FastifyRequest, reply: FastifyReply) => {
-    const { token } = request.cookies;
-
-    if (!token) {
-      return reply.status(401).send({ message: "No token provided" });
-    }
-
-    try {
-      const payload = await verifyToken(token);
-
-      if (!payload) {
-        return reply.status(401).send({ message: "Invalid token payload" });
+      if (token) {
+        await revokeRefreshToken(token);
       }
+      return reply.send({ message: "Logout successful" });
+    });
 
-      const newToken = await generateToken(payload);
+  // app
+  //   .withTypeProvider<ZodTypeProvider>()
+  //   .post("/refresh", async (request: FastifyRequest, reply: FastifyReply) => {
+  //     const { token } = request.cookies;
 
-      reply.setCookie("token", newToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
-        maxAge: 3600,
-      });
+  //     if (!token) {
+  //       return reply.status(401).send({ message: "No token provided" });
+  //     }
 
-      return reply.send({ message: "Token refreshed successfully" });
-    } catch (err) {
-      return reply.status(401).send({ message: "Invalid token" });
-    }
-  });
+  //     try {
+  //       const payload = await verifyRefreshToken(token);
+
+  //       if (!payload) {
+  //         return reply.status(401).send({ message: "Invalid token payload" });
+  //       }
+
+  //       const newToken = await generateToken(payload);
+
+  //       reply.setCookie("token", newToken, {
+  //         httpOnly: true,
+  //         secure: process.env.NODE_ENV === "production",
+  //         sameSite: "strict",
+  //         maxAge: 3600,
+  //       });
+
+  //       return reply.send({ message: "Token refreshed successfully" });
+  //     } catch (err) {
+  //       return reply.status(401).send({ message: "Invalid token" });
+  //     }
+  //   });
 }

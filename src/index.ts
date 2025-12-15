@@ -20,19 +20,19 @@ app.setSerializerCompiler(serializerCompiler);
 app.register(authRoutes, { prefix: "/auth" });
 
 
-app.setErrorHandler((error: FastifyError, _request, reply) => {
-  app.log.error(error);
-  reply.status(error.statusCode || 500).send({
-    message: error.message,
-    code: error.code,
-  });
-});
+// app.setErrorHandler((error: FastifyError, _request, reply) => {
+//   app.log.error(error);
+//   reply.status(error.statusCode || 500).send({
+//     message: error.message,
+//     code: error.code,
+//   });
+// });
 
 const start = async () => {
   try {
     const port = Number(process.env.PORT);
     await app.listen({ port, host: "0.0.0.0" });
-    console.log("Server running on port 3000");
+    console.log(`Server running on port ${port}`);
   } catch (err) {
     app.log.error(err);
     process.exit(1);

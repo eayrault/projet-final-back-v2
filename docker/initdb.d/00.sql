@@ -7,8 +7,8 @@ CREATE TABLE IF NOT EXISTS users (
   username TEXT NOT NULL UNIQUE,
   first_name TEXT NOT NULL,
   last_name TEXT NOT NULL,
-  email TEXT NOT NULL UNIQUE,
-  role TEXT NOT NULL,
+  password TEXT NOT NULL,
+  role user_role DEFAULT 'user',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL
 );
@@ -20,19 +20,16 @@ CREATE TABLE IF NOT EXISTS user_auth (
 );
 
 CREATE TABLE IF NOT EXISTS refresh_tokens (
-  id SERIAL PRIMARY KEY,
-  token_hash VARCHAR(64) UNIQUE NOT NULL,
-  user_id UUID NOT NULL,
-  expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  revoked BOOLEAN DEFAULT FALSE,
-  revoked_at TIMESTAMP WITH TIME ZONE,
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    token_hash TEXT NOT NULL,
+    expires_at TIMESTAMPTZ NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE INDEX IF NOT EXISTS idx_refresh_tokens_hash ON refresh_tokens(token_hash);
 CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user_id ON refresh_tokens(user_id);
-CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_expires_at ON refresh_tokens(expires_at);
+CREATE INDEX IF NOT EXISTS idx_users_auth_email ON user_auth(email);
 CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
 
 CREATE OR REPLACE FUNCTION update_updated_at_column()
