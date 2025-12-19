@@ -1,0 +1,27 @@
+user_auth: id, email, password_hash
+secures, 01 user_auth, 11 users
+:
+:
+:
+:
+
+grant_access, 11 refresh_tokens, 11 users
+users: id, username, first_name, last_name, role, created_at, updated_at
+register_to, 0N users, 0N events
+events: id, name, description, attendees, start_date, created_at, updated_at
+contains, 1N tournaments, 1N events
+:
+
+refresh_tokens: id, user_id, token_hash, expires_at, created_at, updated_at
+:
+:
+:
+tournaments: id, name, descriptions, attendees, game, start_date, created_at, updated_at
+has, 1N matchs, 1N tournaments
+
+:
+:
+:
+games: id, name, descriptions, created_at, updated_at
+is_on, 1N tournaments, 1N games
+matchs: id, score

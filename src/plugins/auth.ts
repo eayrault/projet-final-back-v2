@@ -63,22 +63,52 @@ export const verifyRefreshToken = async (
   token: string
 ): Promise<UserPayload | null> => {
   try {
-    const { payload } = await jose.jwtVerify(token, JWT_SECRET);
-    return payload as unknown as UserPayload;
+    const hash = createHash("sha256").update(token).digest("hex");
+    
+    const result = await sql`
+      SELECT rt.user_id, u.username, u.role
+      FROM refresh_tokens rt
+      INNER JOIN users u ON rt.user_id = u.id
+      WHERE rt.token_hash = ${hash}
+      AND rt.expires_at > NOW()
+    ` as Array<{
+      user_id: string;
+      username: string;
+      role: string;
+    }>;
+
+    if (result.length === 0) {
+      return null;
+    }
+
+    const user = result[0];
+    
+    return {
+      userId: user.user_id,
+      username: user.username,
+      role: user.role,
+    };
   } catch (err) {
+    console.error("Error verifying refresh token:", err);
     return null;
   }
 };
 
-export const revokeRefreshToken = async (token: string): Promise<void> => {
-  const hash = createHash("sha256").update(token).digest("hex");
+export const revokeRefreshToken = async (token: string): Promise<boolean> => {
+  try {
+    const hash = createHash("sha256").update(token).digest("hex");
 
-  await sql`
-  		SELECT user_id
-		FROM refresh_tokens
-		WHERE token_hash = ${hash}
-		AND expires_at > NOW()
-	`;
+    const result = await sql`
+      DELETE FROM refresh_tokens
+      WHERE token_hash = ${hash}
+      RETURNING id
+    `;
+
+    return result.length > 0;
+  } catch (err) {
+    console.error("Error revoking refresh token:", err);
+    return false;
+  }
 };
 
 export const authenticate = async (
