@@ -2,12 +2,13 @@ DROP TABLE IF EXISTS user_auth CASCADE;
 DROP TABLE IF EXISTS refresh_tokens CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
 
+CREATE TYPE user_role AS ENUM ('user', 'admin');
+
 CREATE TABLE IF NOT EXISTS users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   username TEXT NOT NULL UNIQUE,
   first_name TEXT NOT NULL,
   last_name TEXT NOT NULL,
-  password TEXT NOT NULL,
   role user_role DEFAULT 'user',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL
@@ -45,14 +46,18 @@ CREATE TRIGGER update_users_updated_at
     FOR EACH ROW 
     EXECUTE FUNCTION update_updated_at_column();
 
-INSERT INTO users (username, first_name, last_name, email, password, role) 
+INSERT INTO users (username, first_name, last_name, role) 
 VALUES (
     'admin', 
     'Admin', 
-    'User', 
-    'admin@test.com', 
-    '$argon2id$v=19$m=65536,t=3,p=4$somehashedpassword',
+    'User',
     'admin'
-) ON CONFLICT (email) DO NOTHING;
+) ON CONFLICT (username) DO NOTHING;
+
+INSERT INTO user_auth (user_id, email, password_hash)
+SELECT u.id, 'admin@test.com', '$argon2id$v=19$m=65536,t=3,p=4$somehashedpassword'
+FROM users u 
+WHERE u.username = 'admin'
+ON CONFLICT (email) DO NOTHING;
 
 SELECT 'Tables created' as message;

@@ -19,6 +19,9 @@ import {
   UserLoginSchema,
   UserSchema,
   UserRegisterSchema,
+  UserBasicSchema,
+  UserRegisterResponse,
+  UserLoginSchemaResponse,
   type UserRegister,
   type UserLogin,
 } from "../models/User.js";
@@ -43,7 +46,7 @@ export default async function authRoutes(app: FastifyInstance) {
       schema: {
         body: UserRegisterSchema,
         response: {
-          201: UserSchema.omit({ password: true }),
+          201: UserRegisterResponse,
         },
       },
     },
@@ -51,10 +54,17 @@ export default async function authRoutes(app: FastifyInstance) {
       const { username, first_name, last_name, email, password } = request.body;
 
       const existingUser = await sql`
-        SELECT * FROM users WHERE email = ${email}
+        SELECT * FROM user_auth WHERE email = ${email}
       `;
       if (existingUser.length > 0) {
         return reply.status(400).send({ message: "Email already in use" });
+      }
+
+      const existingUsername = await sql`
+      SELECT * FROM users WHERE username = ${username}
+    `;
+      if (existingUsername.length > 0) {
+        return reply.status(400).send({ message: "Username already in use" });
       }
 
       const hashedPassword = await hashPassword(password);
@@ -83,20 +93,29 @@ export default async function authRoutes(app: FastifyInstance) {
     {
       schema: {
         body: UserLoginSchema,
-        response: { 200: UserSchema.omit({ password: true }) },
+        response: { 200: UserLoginSchemaResponse },
       },
     },
     async (request, reply) => {
       const { email, password } = request.body;
 
-      const users = await sql`SELECT * FROM users WHERE email = ${email}`;
-      const user = users[0];
+      const result = await sql`
+        SELECT u.*, ua.email, ua.password_hash 
+        FROM users u
+        INNER JOIN user_auth ua ON u.id = ua.user_id
+        WHERE ua.email = ${email}
+      `;
+
+      const user = result[0];
 
       if (!user) {
         return reply.status(400).send({ message: "Invalid email or password" });
       }
 
-      const isPasswordValid = await verifyPassword(user.password, password);
+      const isPasswordValid = await verifyPassword(
+        user.password_hash,
+        password
+      );
       if (!isPasswordValid) {
         return reply.status(400).send({ message: "Invalid email or password" });
       }
