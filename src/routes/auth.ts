@@ -1,35 +1,24 @@
-import type {
-  FastifyInstance,
-  FastifyReply,
-  FastifyRequest,
-  FastifySchema,
-} from "fastify";
+import type { FastifyInstance } from "fastify";
+import type { ZodTypeProvider } from "fastify-type-provider-zod";
 import sql from "../db/db.js";
 import {
+  type UserLogin,
+  UserLoginResponse,
+  UserLoginSchema,
+  type UserRefreshToken,
+  UserRefreshTokenSchema,
+  type UserRegister,
+  UserRegisterResponse,
+  UserRegisterSchema,
+} from "../models/User.js";
+import {
   createRefreshToken,
-  authenticate,
   generateToken,
   hashPassword,
   revokeRefreshToken,
-  type UserPayload,
   verifyPassword,
   verifyRefreshToken,
 } from "../plugins/auth.js";
-import {
-  UserLoginSchema,
-  UserSchema,
-  UserRegisterSchema,
-  UserBasicSchema,
-  UserRefreshTokenSchema,
-  UserRegisterResponse,
-  UserLoginResponse,
-  type UserRegister,
-  type UserLogin,
-  type UserRefreshToken,
-  User,
-} from "../models/User.js";
-import { ZodTypeProvider } from "fastify-type-provider-zod";
-import { hash } from "crypto";
 
 interface UserInterface {
   id: string;
@@ -87,7 +76,9 @@ export default async function authRoutes(app: FastifyInstance) {
         return { ...user, email };
       });
 
-      return reply.status(201).send({ username: newUser.username, email: newUser.email });
+      return reply
+        .status(201)
+        .send({ username: newUser.username, email: newUser.email });
     }
   );
 

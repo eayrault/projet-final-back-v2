@@ -1,4 +1,5 @@
 import cookie from "@fastify/cookie";
+import cors from "@fastify/cors";
 import fastify, { type FastifyError } from "fastify";
 import {
   serializerCompiler,
@@ -14,11 +15,15 @@ try {
 
 const app = fastify();
 
+app.register(cors, {
+  origin: process.env.FRONTEND_URL || "http://localhost:5173",
+  credentials: true,
+});
+
 app.setValidatorCompiler(validatorCompiler);
 app.setSerializerCompiler(serializerCompiler);
 
 app.register(authRoutes, { prefix: "/auth" });
-
 
 // app.setErrorHandler((error: FastifyError, _request, reply) => {
 //   app.log.error(error);
@@ -29,7 +34,7 @@ app.register(authRoutes, { prefix: "/auth" });
 // });
 
 const start = async () => {
-  try {
+	try {
     const port = Number(process.env.PORT);
     await app.listen({ port, host: "0.0.0.0" });
     console.log(`Server running on port ${port}`);
