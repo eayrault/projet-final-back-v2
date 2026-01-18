@@ -19,6 +19,7 @@ import {
   verifyPassword,
   verifyRefreshToken,
 } from "../plugins/auth.js";
+import { z } from "zod";
 
 interface UserInterface {
   id: string;
@@ -87,7 +88,15 @@ export default async function authRoutes(app: FastifyInstance) {
     {
       schema: {
         body: UserLoginSchema,
-        response: { 200: UserLoginResponse },
+        response: {
+          200: z.object({
+            message: z.string(),
+            user: z.object({
+              username: z.string(),
+              role: z.string(),
+            }),
+          }),
+        },
       },
     },
     async (request, reply) => {
@@ -122,83 +131,83 @@ export default async function authRoutes(app: FastifyInstance) {
 
       const refreshToken = await createRefreshToken(user.id);
 
-      return reply.send({ accessToken, refreshToken });
-    }
-  );
+      reply.setCookie("accessToken", accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 3600, // 1 heure
+        path: "/",
+      });
 
-  app.withTypeProvider<ZodTypeProvider>().post<{ Body: UserRefreshToken }>(
-    "/logout",
-    {
-      schema: {
-        body: UserRefreshTokenSchema,
-      },
-    },
-    async (request, reply) => {
-      try {
-        const { refreshToken } = request.body;
-
-        if (!refreshToken) {
-          return reply.status(400).send({ message: "Refresh token required" });
-        }
-
-        const revoked = await revokeRefreshToken(refreshToken);
-
-        if (!revoked) {
-          return reply.status(400).send({ message: "Invalid refresh token" });
-        }
-
-        return reply.send({ message: "Logout successful" });
-      } catch (error) {
-        console.error("Logout error:", error);
-        return reply.status(500).send({ message: "Internal server error" });
-      }
-    }
-  );
-
-  app.withTypeProvider<ZodTypeProvider>().post<{ Body: UserRefreshToken }>(
-    "/refresh",
-    {
-      schema: {
-        body: UserRefreshTokenSchema,
-        response: {
-          200: UserLoginResponse,
+      return reply.send({
+        message: "Login successful",
+        user: {
+          username: user.username,
+          role: user.role,
         },
-      },
-    },
-    async (request, reply) => {
-      try {
-        const { refreshToken } = request.body;
-
-        if (!refreshToken) {
-          return reply.status(400).send({ message: "Refresh token required" });
-        }
-
-        const userPayload = await verifyRefreshToken(refreshToken);
-
-        if (!userPayload) {
-          return reply
-            .status(401)
-            .send({ message: "Invalid or expired refresh token" });
-        }
-
-        await revokeRefreshToken(refreshToken);
-
-        const newAccessToken = await generateToken({
-          userId: userPayload.userId,
-          username: userPayload.username,
-          role: userPayload.role,
-        });
-
-        const newRefreshToken = await createRefreshToken(userPayload.userId);
-
-        return reply.send({
-          accessToken: newAccessToken,
-          refreshToken: newRefreshToken,
-        });
-      } catch (error) {
-        console.error("Refresh token error:", error);
-        return reply.status(500).send({ message: "Internal server error" });
-      }
+      });
     }
   );
+
+  app.post("/logout", async (request, reply) => {
+    try {
+      const refreshToken = request.cookies.refreshToken;
+
+      if (refreshToken) {
+        await revokeRefreshToken(refreshToken);
+      }
+
+      reply.clearCookie("accessToken");
+
+      return reply.send({ message: "Logout successful" });
+    } catch (error) {
+      console.error("Logout error:", error);
+      return reply.status(500).send({ message: "Internal server error" });
+    }
+  });
+
+  app.post("/refresh", async (request, reply) => {
+    try {
+      const refreshToken = request.cookies.refreshToken;
+
+      if (!refreshToken) {
+        return reply.status(401).send({ message: "No refresh token" });
+      }
+
+      const userPayload = await verifyRefreshToken(refreshToken);
+
+      if (!userPayload) {
+        return reply.status(401).send({ message: "Invalid refresh token" });
+      }
+
+      await revokeRefreshToken(refreshToken);
+
+      const newAccessToken = await generateToken({
+        userId: userPayload.userId,
+        username: userPayload.username,
+        role: userPayload.role,
+      });
+
+      const newRefreshToken = await createRefreshToken(userPayload.userId);
+
+      reply.setCookie("accessToken", newAccessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 3600, // 1 heure
+      });
+
+      reply.setCookie("refreshToken", newRefreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 7 * 24 * 3600, // 7 jours
+      });
+
+      return reply.send({ message: "Tokens refreshed" });
+    } catch (error) {
+      console.error("Refresh error:", error);
+      return reply.status(500).send({ message: "Internal server error" });
+    }
+  });
 }

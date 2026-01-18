@@ -6,6 +6,7 @@ import {
   validatorCompiler,
 } from "fastify-type-provider-zod";
 import authRoutes from "./routes/auth.js";
+import tournamentRoutes from "./routes/tournament.js";
 
 try {
   process.loadEnvFile();
@@ -16,7 +17,7 @@ try {
 const app = fastify();
 
 app.register(cors, {
-  origin: process.env.FRONTEND_URL || "http://localhost:5173",
+  origin: process.env.FRONTEND_URL,
   credentials: true,
 });
 
@@ -24,6 +25,8 @@ app.setValidatorCompiler(validatorCompiler);
 app.setSerializerCompiler(serializerCompiler);
 
 app.register(authRoutes, { prefix: "/auth" });
+app.register(tournamentRoutes, { prefix: "/tournament" });
+app.register(cookie);
 
 // app.setErrorHandler((error: FastifyError, _request, reply) => {
 //   app.log.error(error);

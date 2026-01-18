@@ -1,34 +1,26 @@
 %%mocodo
 :
-user_auth: id, email, password_hash
+user_auth: id, email, password_hash, #id 2 > users > id
 :::::::::::
 
 
 :::
-users: id, username, first_name, last_name, role, created_at, updated_at, #id 2 > user_auth > id
+users: id, username, first_name, last_name, role, created_at, updated_at
 :
 register_to: #id 1 > users > id, _#id 2 > events > id
 :
 events: id, name, description, attendees, start_date, created_at, updated_at
-:
-contains: #id 1 > tournaments > id, _#id 2 > events > id
-:::
+:::::
 
 
 :
 refresh_tokens: id, user_id, token_hash, expires_at, created_at, updated_at, #id 2 > users > id
 :::::::
-tournaments: id, name, descriptions, attendees, game, start_date, created_at, updated_at
-:
-has: #id 1 > matchs > id, _#id 2 > tournaments > id
-:
+tournaments: id, name, descriptions, attendees, game, start_date, created_at, updated_at, #id 2 > events > id, #id 3 > games > id
+:::
 
 
 :::::::
 games: id, name, descriptions, created_at, updated_at
-:
-is_on: #id 1 > tournaments > id, _#id 2 > games > id
-:
-matchs: id, score
-:
-
+:::
+matches: id, score, #id 2 > tournaments > id

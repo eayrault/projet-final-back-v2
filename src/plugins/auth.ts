@@ -115,21 +115,23 @@ export const authenticate = async (
 	request: FastifyRequest,
 	reply: FastifyReply,
 ) => {
-	const header = request.cookies.token;
+	try {
+    const token = request.cookies.accessToken;
 
-	if (!header) {
-		return reply
-			.status(401)
-			.send({ message: "Unauthorized: No token provided" });
-	}
-	const token = header.split(" ")[1];
-	const user = await verifyRefreshToken(token);
+    if (!token) {
+      return reply.status(401).send({ message: "No token provided" });
+    }
 
-	if (!user) {
-		return reply.status(401).send({ message: "Unauthorized: Invalid token" });
-	}
+    const user = await verifyRefreshToken(token);
 
-	request.currentUser = user;
+    if (!user) {
+      return reply.status(401).send({ message: "Invalid token" });
+    }
+
+    request.currentUser = user;
+  } catch (err) {
+    return reply.status(401).send({ message: "Authentication failed" });
+  }
 };
 
 export const requireRole = (role: string) => {
