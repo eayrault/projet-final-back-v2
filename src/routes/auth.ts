@@ -33,7 +33,7 @@ interface UserInterface {
 }
 
 export default async function authRoutes(app: FastifyInstance) {
-  app.withTypeProvider<ZodTypeProvider>().post<{ Body: UserRegister }>(
+  app.post<{ Body: UserRegister }>(
     "/register",
     {
       schema: {
@@ -83,7 +83,7 @@ export default async function authRoutes(app: FastifyInstance) {
     }
   );
 
-  app.withTypeProvider<ZodTypeProvider>().post<{ Body: UserLogin }>(
+  app.post<{ Body: UserLogin }>(
     "/login",
     {
       schema: {
@@ -112,15 +112,15 @@ export default async function authRoutes(app: FastifyInstance) {
       const user = result[0];
 
       if (!user) {
-        return reply.status(400).send({ message: "Invalid email or password" });
+        return reply.status(401).send({ message: "Invalid email or password" });
       }
 
       const isPasswordValid = await verifyPassword(
         user.password_hash,
-        password
+        password,
       );
       if (!isPasswordValid) {
-        return reply.status(400).send({ message: "Invalid email or password" });
+        return reply.status(401).send({ message: "Invalid email or password" });
       }
 
       const accessToken = await generateToken({
@@ -129,7 +129,7 @@ export default async function authRoutes(app: FastifyInstance) {
         role: user.role,
       });
 
-      const refreshToken = await createRefreshToken(user.id);
+      await createRefreshToken(user.id);
 
       reply.setCookie("accessToken", accessToken, {
         httpOnly: true,
@@ -146,7 +146,7 @@ export default async function authRoutes(app: FastifyInstance) {
           role: user.role,
         },
       });
-    }
+    },
   );
 
   app.post("/logout", async (request, reply) => {

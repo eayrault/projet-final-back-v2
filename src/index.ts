@@ -1,12 +1,16 @@
 import cookie from "@fastify/cookie";
 import cors from "@fastify/cors";
-import fastify, { type FastifyError } from "fastify";
+import Fastify from "fastify";
 import {
   serializerCompiler,
   validatorCompiler,
+  ZodTypeProvider,
 } from "fastify-type-provider-zod";
 import authRoutes from "./routes/auth.js";
 import tournamentRoutes from "./routes/tournament.js";
+import userRoutes from "./routes/user.js";
+import eventsRoutes from "./routes/events.js";
+import gamesRoutes from "./routes/games.js";
 
 try {
   process.loadEnvFile();
@@ -14,18 +18,24 @@ try {
   console.warn(".env file not found. Using system environment variables.");
 }
 
-const app = fastify();
+const app = Fastify({ logger: true });
 
-app.register(cors, {
-  origin: process.env.FRONTEND_URL,
-  credentials: true,
-});
+await app
+  .register(cors, {
+    origin: process.env.CORS_ORIGIN || "http://localhost:5173",
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  })
+  .withTypeProvider<ZodTypeProvider>();
 
 app.setValidatorCompiler(validatorCompiler);
 app.setSerializerCompiler(serializerCompiler);
 
 app.register(authRoutes, { prefix: "/auth" });
 app.register(tournamentRoutes, { prefix: "/tournament" });
+app.register(userRoutes, { prefix: "/user" });
+app.register(eventsRoutes, { prefix: "/events" });
+app.register(gamesRoutes, { prefix: "/games" });
 app.register(cookie);
 
 // app.setErrorHandler((error: FastifyError, _request, reply) => {

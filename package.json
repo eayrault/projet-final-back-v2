@@ -29,6 +29,7 @@
 		"@fastify/cookie": "^11.0.2",
 		"@fastify/cors": "^11.2.0",
 		"@fastify/jwt": "^10.0.0",
+		"@types/jsonwebtoken": "^9.0.10",
 		"argon2": "^0.44.0",
 		"dotenv": "^17.2.3",
 		"fastify": "^5.6.2",

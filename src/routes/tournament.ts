@@ -14,7 +14,7 @@ import {
 import { z } from "zod";
 
 export default async function tournamentRoutes(app: FastifyInstance) {
-  app.withTypeProvider<ZodTypeProvider>().get(
+  app.get(
     "/",
     {
       schema: {
@@ -103,7 +103,7 @@ export default async function tournamentRoutes(app: FastifyInstance) {
     }
   );
 
-  app.withTypeProvider<ZodTypeProvider>().post<{
+  app.post<{
     Body: TournamentCreate;
   }>(
     "/",
@@ -148,7 +148,7 @@ export default async function tournamentRoutes(app: FastifyInstance) {
     }
   );
 
-  app.withTypeProvider<ZodTypeProvider>().put<{
+  app.put<{
     Params: { id: string };
     Body: TournamentUpdate;
   }>(
@@ -210,7 +210,7 @@ export default async function tournamentRoutes(app: FastifyInstance) {
     }
   );
 
-  app.withTypeProvider<ZodTypeProvider>().delete<{
+  app.delete<{
     Params: { id: string };
   }>(
     "/:id",
