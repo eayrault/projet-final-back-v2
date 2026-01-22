@@ -4,13 +4,14 @@ import Fastify from "fastify";
 import {
   serializerCompiler,
   validatorCompiler,
-  ZodTypeProvider,
+  type ZodTypeProvider,
 } from "fastify-type-provider-zod";
 import authRoutes from "./routes/auth.js";
-import tournamentRoutes from "./routes/tournament.js";
-import userRoutes from "./routes/user.js";
+import eventRegistrationRoutes from "./routes/event-registrations.js";
 import eventsRoutes from "./routes/events.js";
 import gamesRoutes from "./routes/games.js";
+import tournamentRoutes from "./routes/tournament.js";
+import userRoutes from "./routes/user.js";
 
 try {
   process.loadEnvFile();
@@ -22,7 +23,7 @@ const app = Fastify({ logger: true });
 
 await app
   .register(cors, {
-    origin: process.env.CORS_ORIGIN || "http://localhost:5173",
+    origin: process.env.FRONTEND_URL || "http://localhost:5173",
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   })
@@ -36,6 +37,7 @@ app.register(tournamentRoutes, { prefix: "/tournament" });
 app.register(userRoutes, { prefix: "/user" });
 app.register(eventsRoutes, { prefix: "/events" });
 app.register(gamesRoutes, { prefix: "/games" });
+app.register(eventRegistrationRoutes, { prefix: "/event-registrations" });
 app.register(cookie);
 
 // app.setErrorHandler((error: FastifyError, _request, reply) => {

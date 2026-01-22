@@ -11,31 +11,31 @@ export const UserSchema = z.object({
 });
 
 export const UserRegisterSchema = UserSchema.omit({
-  created_at: true,
-  updated_at: true,
+	created_at: true,
+	updated_at: true,
 });
 
 export const UserRegisterResponse = z.object({
-  username: z.string().min(3).max(30),
-  email: z.email(),
+	username: z.string().min(3).max(30),
+	email: z.email(),
 });
 
 export const UserUpdateSchema = UserSchema.partial().extend({
-  password: z.string().min(6).optional(),
+	password: z.string().min(6).optional(),
 });
 
 export const UserLoginSchema = z.object({
-  email: z.email(),
-  password: z.string().min(6),
+	email: z.email(),
+	password: z.string().min(6),
 });
 
 export const UserLoginResponse = z.object({
-  accessToken: z.string(),
-  refreshToken: z.string(),
+	accessToken: z.string(),
+	refreshToken: z.string(),
 });
 
 export const UserRefreshTokenSchema = z.object({
-  refreshToken: z.string(),
+	refreshToken: z.string(),
 });
 
 export type User = z.infer<typeof UserSchema>;
