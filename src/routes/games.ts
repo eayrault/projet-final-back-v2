@@ -1,203 +1,213 @@
 import type { FastifyInstance } from "fastify";
-import { ZodTypeProvider } from "fastify-type-provider-zod";
 import { z } from "zod";
 import sql from "../db/db.js";
 import {
-	type GameCreate,
-	GameCreateSchema,
-	GameResponseSchema,
-	type GameUpdate,
-	GameUpdateSchema,
+  type GameCreate,
+  GameCreateSchema,
+  GameResponseSchema,
+  type GameUpdate,
+  GameUpdateSchema,
 } from "../models/Games.js";
 
-function formatGameResponse(game: any) {
-	return {
-		...game,
-		created_at:
-			game.created_at instanceof Date
-				? game.created_at.toISOString()
-				: game.created_at,
-		updated_at:
-			game.updated_at instanceof Date
-				? game.updated_at.toISOString()
-				: game.updated_at,
-	};
+interface DatabaseGame {
+  id: string;
+  name: string;
+  descriptions: string | null;
+  created_at: Date | string;
+  updated_at: Date | string;
+}
+
+function formatGameResponse(game: DatabaseGame) {
+  return {
+    ...game,
+    created_at:
+      game.created_at instanceof Date
+        ? game.created_at.toISOString()
+        : game.created_at,
+    updated_at:
+      game.updated_at instanceof Date
+        ? game.updated_at.toISOString()
+        : game.updated_at,
+  };
 }
 
 export default async function gamesRoutes(app: FastifyInstance) {
-	app.get(
-		"/",
-		{
-			schema: {
-				response: {
-					200: z.array(GameResponseSchema),
-				},
-			},
-		},
-		async (request, reply) => {
-			const games = await sql`
-        SELECT * FROM games
-        ORDER BY name ASC
-      `;
+  app.get(
+    "/",
+    {
+      schema: {
+        response: {
+          200: z.array(GameResponseSchema),
+        },
+      },
+    },
+    async (request, reply) => {
+      const games = (await sql`
+		SELECT * FROM games
+		ORDER BY name ASC
+	  `) as DatabaseGame[];
 
-			const formattedGames = games.map(formatGameResponse);
+      const formattedGames = games.map(formatGameResponse);
 
-			return reply.send(formattedGames);
-		},
-	);
+      return reply.send(formattedGames);
+    }
+  );
 
-	app.get<{
-		Params: { id: string };
-	}>(
-		"/:id",
-		{
-			schema: {
-				params: z.object({
-					id: z.string().uuid(),
-				}),
-				response: {
-					200: GameResponseSchema,
-				},
-			},
-		},
-		async (request, reply) => {
-			const { id } = request.params;
+  app.get<{
+    Params: { id: string };
+  }>(
+    "/:id",
+    {
+      schema: {
+        params: z.object({
+          id: z.string().uuid(),
+        }),
+        response: {
+          200: GameResponseSchema,
+        },
+      },
+    },
+    async (request, reply) => {
+      const { id } = request.params;
 
-			const result = await sql`
-        SELECT * FROM games
-        WHERE id = ${id}
-      `;
+      const result = (await sql`
+		SELECT * FROM games
+		WHERE id = ${id}
+	  `) as DatabaseGame[];
 
-			const game = result[0];
+      const game = result[0];
 
-			if (!game) {
-				return reply.status(404).send({ message: "Game not found" });
-			}
+      if (!game) {
+        return reply.status(404).send({ message: "Game not found" });
+      }
 
-			return reply.send(formatGameResponse(game));
-		},
-	);
+      return reply.send(formatGameResponse(game));
+    }
+  );
 
-	app.post<{
-		Body: GameCreate;
-	}>(
-		"/",
-		{
-			schema: {
-				body: GameCreateSchema,
-				response: {
-					201: GameResponseSchema,
-				},
-			},
-		},
-		async (request, reply) => {
-			const { name, descriptions } = request.body;
+  app.post<{
+    Body: GameCreate;
+  }>(
+    "/",
+    {
+      schema: {
+        body: GameCreateSchema,
+        response: {
+          201: GameResponseSchema,
+        },
+      },
+    },
+    async (request, reply) => {
+      const { name, descriptions } = request.body;
 
-			// Vérifier si le jeu existe déjà
-			const existingGame = await sql`
-        SELECT * FROM games WHERE name = ${name}
-      `;
+      const existingGame = await sql`
+		SELECT * FROM games WHERE name = ${name}
+	  `;
 
-			if (existingGame.length > 0) {
-				return reply.status(400).send({ message: "Game already exists" });
-			}
+      if (existingGame.length > 0) {
+        return reply.status(400).send({ message: "Game already exists" });
+      }
 
-			const [newGame] = await sql`
-        INSERT INTO games (name, descriptions)
-        VALUES (${name}, ${descriptions ?? null})
-        RETURNING *
-      `;
+      const result = (await sql`
+		INSERT INTO games (name, descriptions)
+		VALUES (${name}, ${descriptions ?? null})
+		RETURNING *
+	  `) as DatabaseGame[];
 
-			return reply.status(201).send(formatGameResponse(newGame));
-		},
-	);
+      const newGame = result[0];
 
-	app.put<{
-		Params: { id: string };
-		Body: GameUpdate;
-	}>(
-		"/:id",
-		{
-			schema: {
-				params: z.object({
-					id: z.string().uuid(),
-				}),
-				body: GameUpdateSchema,
-				response: {
-					200: GameResponseSchema,
-				},
-			},
-		},
-		async (request, reply) => {
-			const { id } = request.params;
-			const { name, descriptions } = request.body;
+      return reply.status(201).send(formatGameResponse(newGame));
+    }
+  );
 
-			const existingGame = await sql`
+  app.put<{
+    Params: { id: string };
+    Body: GameUpdate;
+  }>(
+    "/:id",
+    {
+      schema: {
+        params: z.object({
+          id: z.string().uuid(),
+        }),
+        body: GameUpdateSchema,
+        response: {
+          200: GameResponseSchema,
+        },
+      },
+    },
+    async (request, reply) => {
+      const { id } = request.params;
+      const { name, descriptions } = request.body;
+
+      const existingGame = await sql`
         SELECT * FROM games WHERE id = ${id}
       `;
 
-			if (existingGame.length === 0) {
-				return reply.status(404).send({ message: "Game not found" });
-			}
+      if (existingGame.length === 0) {
+        return reply.status(404).send({ message: "Game not found" });
+      }
 
-			if (name) {
-				const nameExists = await sql`
+      if (name) {
+        const nameExists = await sql`
           SELECT * FROM games 
           WHERE name = ${name} AND id != ${id}
         `;
-				if (nameExists.length > 0) {
-					return reply
-						.status(400)
-						.send({ message: "Game name already in use" });
-				}
-			}
+        if (nameExists.length > 0) {
+          return reply
+            .status(400)
+            .send({ message: "Game name already in use" });
+        }
+      }
 
-			const [updatedGame] = await sql`
-        UPDATE games
-        SET 
-          name = COALESCE(${name ?? null}, name),
-          descriptions = COALESCE(${descriptions ?? null}, descriptions),
-          updated_at = NOW()
-        WHERE id = ${id}
-        RETURNING *
-      `;
+      const result = (await sql`
+		UPDATE games
+		SET 
+		  name = COALESCE(${name ?? null}, name),
+		  descriptions = COALESCE(${descriptions ?? null}, descriptions),
+		  updated_at = NOW()
+		WHERE id = ${id}
+		RETURNING *
+	  `) as DatabaseGame[];
 
-			return reply.send(formatGameResponse(updatedGame));
-		},
-	);
+      const updatedGame = result[0];
 
-	app.delete<{
-		Params: { id: string };
-	}>(
-		"/:id",
-		{
-			schema: {
-				params: z.object({
-					id: z.string().uuid(),
-				}),
-				response: {
-					200: z.object({
-						message: z.string(),
-					}),
-				},
-			},
-		},
-		async (request, reply) => {
-			const { id } = request.params;
+      return reply.send(formatGameResponse(updatedGame));
+    }
+  );
 
-			const existingGame = await sql`
+  app.delete<{
+    Params: { id: string };
+  }>(
+    "/:id",
+    {
+      schema: {
+        params: z.object({
+          id: z.string().uuid(),
+        }),
+        response: {
+          200: z.object({
+            message: z.string(),
+          }),
+        },
+      },
+    },
+    async (request, reply) => {
+      const { id } = request.params;
+
+      const existingGame = await sql`
         SELECT * FROM games WHERE id = ${id}
       `;
 
-			if (existingGame.length === 0) {
-				return reply.status(404).send({ message: "Game not found" });
-			}
+      if (existingGame.length === 0) {
+        return reply.status(404).send({ message: "Game not found" });
+      }
 
-			await sql`
+      await sql`
         DELETE FROM games WHERE id = ${id}
       `;
 
-			return reply.send({ message: "Game deleted successfully" });
-		},
-	);
+      return reply.send({ message: "Game deleted successfully" });
+    }
+  );
 }
