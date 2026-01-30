@@ -4,11 +4,11 @@ API REST pour la gestion d'événements gaming, tournois et inscriptions.
 
 ## Installation
 
-Prérequi : NodeJS, Docker
+Prérequi : NodeJS, Docker, pnpm
 
 ```bash
 # Cloner le repository
-git clone <url-repository>
+git clone https://github.com/eayrault/projet-final-back-v2.git
 cd projet-final-back-v2
 
 # Installer les dépendances
@@ -110,10 +110,6 @@ L'API utilise des cookies HttpOnly pour l'authentification :
     - [DELETE /games/:id](#delete-gamesid)
 
 ### <a name="routes-authentification"></a>Authentification
-
-**Base URL:** `/api/auth`
-
----
 
 #### <a name="post-authregister"></a>`POST /auth/register`
 
