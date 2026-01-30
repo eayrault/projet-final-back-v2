@@ -1,13 +1,13 @@
 import { z } from "zod";
 
 export const UserSchema = z.object({
-	username: z.string().min(3).max(30),
-	first_name: z.string().min(1).max(50),
-	last_name: z.string().min(1).max(50),
-	email: z.email(),
-	password: z.string().min(6),
-	created_at: z.string().optional(),
-	updated_at: z.string().optional(),
+  username: z.string().min(3).max(30),
+  first_name: z.string().min(1).max(50),
+  last_name: z.string().min(1).max(50),
+  email: z.email(),
+  password: z.string().min(6),
+  created_at: z.date().optional(),
+  updated_at: z.date().optional(),
 });
 
 export const UserRegisterSchema = UserSchema.omit({

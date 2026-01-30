@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS refresh_tokens (
 CREATE TABLE IF NOT EXISTS games (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL UNIQUE,
-    descriptions TEXT,
+    description TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL
 );
@@ -48,6 +48,7 @@ CREATE TABLE IF NOT EXISTS events (
     description TEXT,
     attendees INTEGER DEFAULT 0,
     start_date TIMESTAMP WITH TIME ZONE NOT NULL,
+    end_date TIMESTAMP WITH TIME ZONE NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL
 );
@@ -55,11 +56,12 @@ CREATE TABLE IF NOT EXISTS events (
 CREATE TABLE IF NOT EXISTS tournaments (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT NOT NULL,
-    descriptions TEXT,
+    description TEXT,
     attendees INTEGER DEFAULT 0,
     game_id UUID NOT NULL REFERENCES games(id) ON DELETE CASCADE,
     event_id UUID NOT NULL REFERENCES events(id) ON DELETE CASCADE,
     start_date TIMESTAMP WITH TIME ZONE NOT NULL,
+    end_date TIMESTAMP WITH TIME ZONE NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL
 );
@@ -141,19 +143,19 @@ FROM users u
 WHERE u.username = 'admin'
 ON CONFLICT (email) DO NOTHING;
 
-INSERT INTO games (name, descriptions) VALUES 
+INSERT INTO games (name, description) VALUES 
     ('Guilty Gear -Strive-', 'Jeu de combat par Arc System Works'),
     ('Teamfight Tactics', 'Auto-battler par Riot Games'),
     ('Counter-Strike 2', 'FPS par Valve'),
     ('Super Smash Bros. Ultimate', 'Jeu de combat par Nintendo')  
 ON CONFLICT (name) DO NOTHING;
 
-INSERT INTO events (name, description, attendees, start_date) VALUES 
-    ('Evo France 2026', 'Événement en France organisé par EVO', 0, '2026-10-09 09:00:00+00')
+INSERT INTO events (name, description, attendees, start_date, end_date) VALUES 
+    ('Evo France 2026', 'Événement en France organisé par EVO', 0, '2026-01-01 09:00:00+00', '2026-02-01 21:00:00+00')
 ON CONFLICT DO NOTHING;
 
-INSERT INTO tournaments (name, descriptions, attendees, game_id, event_id, start_date) VALUES 
-    ('Tournoi Guilty Gear -Strive-', 'Tournoi de Guilty Gear -Strive- lors de l Evo France 2026', 0, (SELECT id FROM games WHERE name = 'Guilty Gear -Strive-'), (SELECT id FROM events WHERE name = 'Evo France 2026'), '2026-10-10 10:00:00+00')
+INSERT INTO tournaments (name, description, attendees, game_id, event_id, start_date, end_date) VALUES 
+    ('Tournoi Guilty Gear -Strive-', 'Tournoi de Guilty Gear -Strive- lors de l Evo France 2026', 0, (SELECT id FROM games WHERE name = 'Guilty Gear -Strive-'), (SELECT id FROM events WHERE name = 'Evo France 2026'), '2026-01-01 10:00:00+00', '2026-02-01 20:00:00+00')
 ON CONFLICT DO NOTHING;
 
 SELECT 'Tables created' as message;

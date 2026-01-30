@@ -8,27 +8,14 @@ import {
   type GameUpdate,
   GameUpdateSchema,
 } from "../models/Games.js";
+import { authenticate } from "../plugins/auth.js";
 
 interface DatabaseGame {
   id: string;
   name: string;
-  descriptions: string | null;
+  description: string | null;
   created_at: Date | string;
   updated_at: Date | string;
-}
-
-function formatGameResponse(game: DatabaseGame) {
-  return {
-    ...game,
-    created_at:
-      game.created_at instanceof Date
-        ? game.created_at.toISOString()
-        : game.created_at,
-    updated_at:
-      game.updated_at instanceof Date
-        ? game.updated_at.toISOString()
-        : game.updated_at,
-  };
 }
 
 export default async function gamesRoutes(app: FastifyInstance) {
@@ -47,9 +34,7 @@ export default async function gamesRoutes(app: FastifyInstance) {
 		ORDER BY name ASC
 	  `) as DatabaseGame[];
 
-      const formattedGames = games.map(formatGameResponse);
-
-      return reply.send(formattedGames);
+      return reply.send(games);
     }
   );
 
@@ -81,7 +66,7 @@ export default async function gamesRoutes(app: FastifyInstance) {
         return reply.status(404).send({ message: "Game not found" });
       }
 
-      return reply.send(formatGameResponse(game));
+      return reply.send(game);
     }
   );
 
@@ -98,7 +83,7 @@ export default async function gamesRoutes(app: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const { name, descriptions } = request.body;
+      const { name, description } = request.body;
 
       const existingGame = await sql`
 		SELECT * FROM games WHERE name = ${name}
@@ -109,14 +94,14 @@ export default async function gamesRoutes(app: FastifyInstance) {
       }
 
       const result = (await sql`
-		INSERT INTO games (name, descriptions)
-		VALUES (${name}, ${descriptions ?? null})
+		INSERT INTO games (name, description)
+		VALUES (${name}, ${description ?? null})
 		RETURNING *
 	  `) as DatabaseGame[];
 
       const newGame = result[0];
 
-      return reply.status(201).send(formatGameResponse(newGame));
+      return reply.status(201).send(newGame);
     }
   );
 
@@ -138,7 +123,7 @@ export default async function gamesRoutes(app: FastifyInstance) {
     },
     async (request, reply) => {
       const { id } = request.params;
-      const { name, descriptions } = request.body;
+      const { name, description } = request.body;
 
       const existingGame = await sql`
         SELECT * FROM games WHERE id = ${id}
@@ -164,7 +149,7 @@ export default async function gamesRoutes(app: FastifyInstance) {
 		UPDATE games
 		SET 
 		  name = COALESCE(${name ?? null}, name),
-		  descriptions = COALESCE(${descriptions ?? null}, descriptions),
+		  description = COALESCE(${description ?? null}, description),
 		  updated_at = NOW()
 		WHERE id = ${id}
 		RETURNING *
@@ -172,7 +157,7 @@ export default async function gamesRoutes(app: FastifyInstance) {
 
       const updatedGame = result[0];
 
-      return reply.send(formatGameResponse(updatedGame));
+      return reply.send(updatedGame);
     }
   );
 

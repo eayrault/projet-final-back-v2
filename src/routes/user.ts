@@ -2,7 +2,7 @@ import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import sql from "../db/db.js";
 import { type UserUpdate, UserUpdateSchema } from "../models/User.js";
-import { hashPassword } from "../plugins/auth.js";
+import { hashPassword, authenticate } from "../plugins/auth.js";
 
 const UserResponseSchema = z.object({
   id: z.string().uuid(),

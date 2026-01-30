@@ -111,12 +111,29 @@ export const revokeRefreshToken = async (token: string): Promise<boolean> => {
 	}
 };
 
+export const revokeAllRefreshTokensForUser = async (
+	userId: string,
+): Promise<number> => {
+	try {
+		const result = await sql`
+	  DELETE FROM refresh_tokens
+	  WHERE user_id = ${userId}
+	  RETURNING id
+	`;
+
+	return result.length;
+} catch (err) {
+	console.error("Error revoking all refresh tokens for user:", err);
+	return 0;
+}
+};
+
 export const authenticate = async (
 	request: FastifyRequest,
 	reply: FastifyReply,
 ) => {
 	try {
-		const token = request.cookies.accessToken;
+		const token = request.cookies.refreshToken;
 
 		if (!token) {
 			return reply.status(401).send({ message: "No token provided" });

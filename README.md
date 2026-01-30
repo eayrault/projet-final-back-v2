@@ -4,22 +4,24 @@ API REST pour la gestion d'événements gaming, tournois et inscriptions.
 
 ## Installation
 
+Prérequi : NodeJS, Docker
+
 ```bash
 # Cloner le repository
-git clone <repository-url>
+git clone <url-repository>
 cd projet-final-back-v2
 
 # Installer les dépendances
-npm install
+pnpm install
 
 # Démarrer la base de données
-npm run start
+pnpm start
 
 # Compiler TypeScript
-npm run build
+pnpm build
 
 # Démarrer le serveur
-npm run dev
+node /dist/index.js
 ```
 
 ## Configuration
@@ -29,10 +31,17 @@ npm run dev
 Créez un fichier `.env` à la racine du projet :
 
 ```env
-NODE_ENV=development
+PGHOST=database_host
+PGPORT=database_port
+PGUSER=database_user
+PGPASSWORD=database_password
+PGDATABASE=database_name
+
 DATABASE_URL=postgres://user:password@localhost:5432/database_name
+FRONTEND_URL=http://front_end_url.com
+
+PORT=3000
 JWT_SECRET=your-secret-key-here
-FRONTEND_URL=http://localhost:5173
 ```
 
 ### Base URL
@@ -43,7 +52,7 @@ http://localhost:3000/api
 
 ### Format des données
 
-- **Dates** : Format ISO 8601 (`2026-06-15T10:00:00Z`)
+- **Dates** : Format ISO 8601 (`2026-01-01T10:00:00Z`)
 - **IDs** : UUID v4
 - **Réponses** : JSON
 
@@ -60,8 +69,8 @@ L'API utilise des cookies HttpOnly pour l'authentification :
 
 ```javascript
 // Fetch API
-fetch('http://localhost:3000/api/endpoint', {
-  credentials: 'include', // Important !
+fetch('http://localhost:3000/endpoint', {
+  credentials: 'include',
 });
 
 // Axios
@@ -108,8 +117,8 @@ Créer un nouveau compte utilisateur.
   "last_name": "Doe",
   "email": "john@example.com",
   "role": "user",
-  "created_at": "2026-01-29T10:00:00Z",
-  "updated_at": "2026-01-29T10:00:00Z"
+  "created_at": "2026-01-01T10:00:00Z",
+  "updated_at": "2026-01-01T10:00:00Z"
 }
 ```
 
@@ -217,8 +226,8 @@ Récupérer tous les utilisateurs.
     "first_name": "John",
     "last_name": "Doe",
     "role": "user",
-    "created_at": "2026-01-29T10:00:00Z",
-    "updated_at": "2026-01-29T10:00:00Z"
+    "created_at": "2026-01-01T10:00:00Z",
+    "updated_at": "2026-01-01T10:00:00Z"
   }
 ]
 ```
@@ -241,8 +250,8 @@ Récupérer un utilisateur par son ID.
   "last_name": "Doe",
   "email": "john@example.com",
   "role": "user",
-  "created_at": "2026-01-29T10:00:00Z",
-  "updated_at": "2026-01-29T10:00:00Z"
+  "created_at": "2026-01-01T10:00:00Z",
+  "updated_at": "2026-01-01T10:00:00Z"
 }
 ```
 
@@ -279,8 +288,8 @@ Mettre à jour un utilisateur.
   "last_name": "NewLastName",
   "email": "newemail@example.com",
   "role": "user",
-  "created_at": "2026-01-29T10:00:00Z",
-  "updated_at": "2026-01-29T12:00:00Z"
+  "created_at": "2026-01-01T10:00:00Z",
+  "updated_at": "2026-01-01T10:00:00Z"
 }
 ```
 
@@ -327,12 +336,12 @@ Récupérer tous les événements.
 [
   {
     "id": "550e8400-e29b-41d4-a716-446655440000",
-    "name": "Gaming Convention 2026",
-    "description": "Le plus grand événement gaming de l'année",
+    "name": "Evo 2026",
+    "description": "Événement en France organisé par EVO",
     "attendees": 150,
-    "start_date": "2026-06-15T10:00:00Z",
-    "created_at": "2026-01-29T10:00:00Z",
-    "updated_at": "2026-01-29T10:00:00Z"
+    "start_date": "2026-01-01T10:00:00Z",
+    "created_at": "2026-01-01T10:00:00Z",
+    "updated_at": "2026-01-01T10:00:00Z"
   }
 ]
 ```
@@ -350,12 +359,12 @@ Récupérer un événement par son ID.
 ```json
 {
   "id": "550e8400-e29b-41d4-a716-446655440000",
-  "name": "Gaming Convention 2026",
-  "description": "Le plus grand événement gaming de l'année",
+  "name": "Evo 2026",
+  "description": "Événement en France organisé par EVO",
   "attendees": 150,
   "start_date": "2026-06-15T10:00:00Z",
-  "created_at": "2026-01-29T10:00:00Z",
-  "updated_at": "2026-01-29T10:00:00Z"
+  "created_at": "2026-01-01T10:00:00Z",
+  "updated_at": "2026-01-01T10:00:00Z"
 }
 ```
 
@@ -373,8 +382,8 @@ Créer un nouvel événement.
 **Request Body:**
 ```json
 {
-  "name": "Gaming Convention 2026",
-  "description": "Le plus grand événement gaming de l'année",
+  "name": "Evo 2026",
+  "description": "Événement en France organisé par EVO",
   "start_date": "2026-06-15T10:00:00Z"
 }
 ```
@@ -383,12 +392,12 @@ Créer un nouvel événement.
 ```json
 {
   "id": "550e8400-e29b-41d4-a716-446655440000",
-  "name": "Gaming Convention 2026",
-  "description": "Le plus grand événement gaming de l'année",
+  "name": "Evo 2026",
+  "description": "Événement en France organisé par EVO",
   "attendees": 0,
   "start_date": "2026-06-15T10:00:00Z",
-  "created_at": "2026-01-29T10:00:00Z",
-  "updated_at": "2026-01-29T10:00:00Z"
+  "created_at": "2026-01-01T10:00:00Z",
+  "updated_at": "2026-01-01T10:00:00Z"
 }
 ```
 
@@ -410,9 +419,9 @@ Mettre à jour un événement.
 **Request Body (tous optionnels):**
 ```json
 {
-  "name": "Gaming Convention 2026 - Updated",
+  "name": "Evo 2026 - Updated",
   "description": "Nouvelle description",
-  "start_date": "2026-06-16T10:00:00Z"
+  "start_date": "2026-01-01T10:00:00Z"
 }
 ```
 
@@ -420,12 +429,12 @@ Mettre à jour un événement.
 ```json
 {
   "id": "550e8400-e29b-41d4-a716-446655440000",
-  "name": "Gaming Convention 2026 - Updated",
+  "name": "Evo 2026 - Updated",
   "description": "Nouvelle description",
   "attendees": 150,
-  "start_date": "2026-06-16T10:00:00Z",
-  "created_at": "2026-01-29T10:00:00Z",
-  "updated_at": "2026-01-29T12:00:00Z"
+  "start_date": "2026-01-01T10:00:00Z",
+  "created_at": "2026-01-01T10:00:00Z",
+  "updated_at": "2026-01-01T10:00:00Z"
 }
 ```
 
@@ -479,7 +488,7 @@ S'inscrire à un événement.
     "id": "660e8400-e29b-41d4-a716-446655440000",
     "user_id": "770e8400-e29b-41d4-a716-446655440000",
     "event_id": "550e8400-e29b-41d4-a716-446655440000",
-    "registered_at": "2026-01-29T10:00:00Z"
+    "registered_at": "2026-01-01T10:00:00Z"
   }
 }
 ```
@@ -526,10 +535,10 @@ Récupérer les événements auxquels l'utilisateur est inscrit.
     "id": "660e8400-e29b-41d4-a716-446655440000",
     "user_id": "770e8400-e29b-41d4-a716-446655440000",
     "event_id": "550e8400-e29b-41d4-a716-446655440000",
-    "registered_at": "2026-01-29T10:00:00Z",
-    "event_name": "Gaming Convention 2026",
-    "event_description": "Le plus grand événement gaming",
-    "event_start_date": "2026-06-15T10:00:00Z",
+    "registered_at": "2026-01-01T10:00:00Z",
+    "event_name": "Evo 2026",
+    "event_description": "Événement en France organisé par EVO",
+    "event_start_date": "2026-01-01T10:00:00Z",
     "username": "john_doe"
   }
 ]
@@ -552,7 +561,7 @@ Récupérer la liste des participants d'un événement.
     "username": "john_doe",
     "first_name": "John",
     "last_name": "Doe",
-    "registered_at": "2026-01-29T10:00:00Z"
+    "registered_at": "2026-01-01T10:00:00Z"
   }
 ]
 ```
@@ -593,16 +602,16 @@ Récupérer tous les tournois avec détails (jeu et événement).
 [
   {
     "id": "880e8400-e29b-41d4-a716-446655440000",
-    "name": "Tournoi SSBU 2026",
-    "descriptions": "Tournoi Smash Bros Ultimate",
+    "name": "Tournoi Guilty Gear 2026",
+    "descriptions": "Tournoi Guilty Gear -Strive-",
     "attendees": 32,
     "game_id": "990e8400-e29b-41d4-a716-446655440000",
     "event_id": "550e8400-e29b-41d4-a716-446655440000",
-    "start_date": "2026-06-15T14:00:00Z",
-    "created_at": "2026-01-29T10:00:00Z",
-    "updated_at": "2026-01-29T10:00:00Z",
-    "game_name": "Super Smash Bros. Ultimate",
-    "event_name": "Gaming Convention 2026"
+    "start_date": "2026-01-01T10:00:00Z",
+    "created_at": "2026-01-01T10:00:00Z",
+    "updated_at": "2026-01-01T10:00:00Z",
+    "game_name": "Guilty Gear -Strive-",
+    "event_name": "Evo 2026"
   }
 ]
 ```
@@ -620,16 +629,16 @@ Récupérer un tournoi par son ID avec détails.
 ```json
 {
   "id": "880e8400-e29b-41d4-a716-446655440000",
-  "name": "Tournoi SSBU 2026",
-  "descriptions": "Tournoi Smash Bros Ultimate",
+  "name": "Tournoi Guilty Gear 2026",
+  "descriptions": "Tournoi Guilty Gear -Strive-",
   "attendees": 32,
   "game_id": "990e8400-e29b-41d4-a716-446655440000",
   "event_id": "550e8400-e29b-41d4-a716-446655440000",
   "start_date": "2026-06-15T14:00:00Z",
-  "created_at": "2026-01-29T10:00:00Z",
-  "updated_at": "2026-01-29T10:00:00Z",
-  "game_name": "Super Smash Bros. Ultimate",
-  "event_name": "Gaming Convention 2026"
+  "created_at": "2026-01-01T10:00:00Z",
+  "updated_at": "2026-01-01T10:00:00Z",
+  "game_name": "Guilty Gear -Strive-",
+  "event_name": "Evo 2026"
 }
 ```
 
@@ -647,8 +656,8 @@ Créer un nouveau tournoi.
 **Request Body:**
 ```json
 {
-  "name": "Tournoi SSBU 2026",
-  "descriptions": "Tournoi Smash Bros Ultimate",
+  "name": "Tournoi Guilty Gear 2026",
+  "descriptions": "Tournoi Guilty Gear -Strive-",
   "attendees": 0,
   "game_id": "990e8400-e29b-41d4-a716-446655440000",
   "event_id": "550e8400-e29b-41d4-a716-446655440000",
@@ -660,14 +669,14 @@ Créer un nouveau tournoi.
 ```json
 {
   "id": "880e8400-e29b-41d4-a716-446655440000",
-  "name": "Tournoi SSBU 2026",
-  "descriptions": "Tournoi Smash Bros Ultimate",
+  "name": "Tournoi Guilty Gear 2026",
+  "descriptions": "Tournoi Guilty Gear -Strive-",
   "attendees": 0,
   "game_id": "990e8400-e29b-41d4-a716-446655440000",
   "event_id": "550e8400-e29b-41d4-a716-446655440000",
-  "start_date": "2026-06-15T14:00:00Z",
-  "created_at": "2026-01-29T10:00:00Z",
-  "updated_at": "2026-01-29T10:00:00Z"
+  "start_date": "2026-01-01T10:00:00Z",
+  "created_at": "2026-01-01T10:00:00Z",
+  "updated_at": "2026-01-01T10:00:00Z"
 }
 ```
 
@@ -690,9 +699,9 @@ Mettre à jour un tournoi.
 **Request Body (tous optionnels):**
 ```json
 {
-  "name": "Tournoi SSBU 2026 - Finale",
+  "name": "Tournoi Guilty Gear 2026 - Finale",
   "attendees": 64,
-  "start_date": "2026-06-16T14:00:00Z"
+  "start_date": "2026-01-01T10:00:00Z"
 }
 ```
 
@@ -700,14 +709,14 @@ Mettre à jour un tournoi.
 ```json
 {
   "id": "880e8400-e29b-41d4-a716-446655440000",
-  "name": "Tournoi SSBU 2026 - Finale",
+  "name": "Tournoi Guilty Gear 2026 - Finale",
   "descriptions": "Tournoi Smash Bros Ultimate",
   "attendees": 64,
   "game_id": "990e8400-e29b-41d4-a716-446655440000",
   "event_id": "550e8400-e29b-41d4-a716-446655440000",
-  "start_date": "2026-06-16T14:00:00Z",
-  "created_at": "2026-01-29T10:00:00Z",
-  "updated_at": "2026-01-29T12:00:00Z"
+  "start_date": "2026-01-01T10:00:00Z",
+  "created_at": "2026-01-01T10:00:00Z",
+  "updated_at": "2026-01-01T10:00:00Z"
 }
 ```
 
@@ -749,10 +758,10 @@ Récupérer tous les jeux.
 [
   {
     "id": "990e8400-e29b-41d4-a716-446655440000",
-    "name": "Super Smash Bros. Ultimate",
-    "descriptions": "Jeu de combat par Nintendo",
-    "created_at": "2026-01-29T10:00:00Z",
-    "updated_at": "2026-01-29T10:00:00Z"
+    "name": "Guilty Gear -Strive-",
+    "descriptions": "Jeu de combat par Arc System Works",
+    "created_at": "2026-01-01T10:00:00Z",
+    "updated_at": "2026-01-01T10:00:00Z"
   }
 ]
 ```
@@ -770,10 +779,10 @@ Récupérer un jeu par son ID.
 ```json
 {
   "id": "990e8400-e29b-41d4-a716-446655440000",
-  "name": "Super Smash Bros. Ultimate",
-  "descriptions": "Jeu de combat par Nintendo",
-  "created_at": "2026-01-29T10:00:00Z",
-  "updated_at": "2026-01-29T10:00:00Z"
+  "name": "Guilty Gear -Strive-",
+  "descriptions": "Jeu de combat par Arc System Works",
+  "created_at": "2026-01-01T10:00:00Z",
+  "updated_at": "2026-01-01T10:00:00Z"
 }
 ```
 
@@ -791,8 +800,8 @@ Créer un nouveau jeu.
 **Request Body:**
 ```json
 {
-  "name": "Super Smash Bros. Ultimate",
-  "descriptions": "Jeu de combat par Nintendo"
+  "name": "Guilty Gear -Strive-",
+  "descriptions": "Jeu de combat par Arc System Works"
 }
 ```
 
@@ -800,10 +809,10 @@ Créer un nouveau jeu.
 ```json
 {
   "id": "990e8400-e29b-41d4-a716-446655440000",
-  "name": "Super Smash Bros. Ultimate",
-  "descriptions": "Jeu de combat par Nintendo",
-  "created_at": "2026-01-29T10:00:00Z",
-  "updated_at": "2026-01-29T10:00:00Z"
+  "name": "Guilty Gear -Strive-",
+  "descriptions": "Jeu de combat par Arc System Works",
+  "created_at": "2026-01-01T10:00:00Z",
+  "updated_at": "2026-01-01T10:00:00Z"
 }
 ```
 
@@ -837,8 +846,8 @@ Mettre à jour un jeu.
   "id": "990e8400-e29b-41d4-a716-446655440000",
   "name": "SSBU",
   "descriptions": "Nouvelle description",
-  "created_at": "2026-01-29T10:00:00Z",
-  "updated_at": "2026-01-29T12:00:00Z"
+  "created_at": "2026-01-01T10:00:00Z",
+  "updated_at": "2026-01-01T10:00:00Z"
 }
 ```
 
@@ -864,227 +873,6 @@ Supprimer un jeu.
 - `401 Unauthorized` - Non authentifié
 - `403 Forbidden` - Permissions insuffisantes
 - `404 Not Found` - Jeu non trouvé
-
----
-
-## <a name="codes-derreur"></a> Codes d'erreur HTTP
-
-| Code | Nom | Description |
-|------|-----|-------------|
-| `200` | OK | Requête réussie |
-| `201` | Created | Ressource créée avec succès |
-| `400` | Bad Request | Requête invalide (données manquantes ou incorrectes) |
-| `401` | Unauthorized | Authentification requise ou token invalide |
-| `403` | Forbidden | Permissions insuffisantes |
-| `404` | Not Found | Ressource non trouvée |
-| `500` | Internal Server Error | Erreur serveur interne |
-
-### Format des erreurs
-
-```json
-{
-  "message": "Description de l'erreur"
-}
-```
-
----
-
-## <a name="exemples"></a> Exemples d'utilisation
-
-### JavaScript / Fetch API
-
-```javascript
-// Configuration globale
-const API_BASE_URL = 'http://localhost:3000/api';
-
-// Helper function
-async function apiRequest(endpoint, options = {}) {
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    ...options,
-    credentials: 'include', // Important pour les cookies
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-  });
-  
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message);
-  }
-  
-  return response.json();
-}
-
-// Exemple : Login
-async function login(email, password) {
-  return apiRequest('/auth/login', {
-    method: 'POST',
-    body: JSON.stringify({ email, password }),
-  });
-}
-
-// Exemple : S'inscrire à un événement
-async function registerForEvent(eventId) {
-  return apiRequest('/event-registrations', {
-    method: 'POST',
-    body: JSON.stringify({ event_id: eventId }),
-  });
-}
-
-// Exemple : Récupérer mes événements
-async function getMyEvents() {
-  return apiRequest('/event-registrations/my-events');
-}
-
-// Exemple : Créer un tournoi
-async function createTournament(data) {
-  return apiRequest('/tournaments', {
-    method: 'POST',
-    body: JSON.stringify(data),
-  });
-}
-
-// Utilisation
-try {
-  await login('john@example.com', 'password123');
-  const myEvents = await getMyEvents();
-  console.log('Mes événements:', myEvents);
-} catch (error) {
-  console.error('Erreur:', error.message);
-}
-```
-
-### React Hooks Example
-
-```jsx
-import { useState, useEffect } from 'react';
-
-function useAuth() {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  const login = async (email, password) => {
-    const response = await fetch('http://localhost:3000/api/auth/login', {
-      method: 'POST',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    });
-    
-    if (!response.ok) throw new Error('Login failed');
-    
-    const data = await response.json();
-    setUser(data.user);
-    return data;
-  };
-
-  const logout = async () => {
-    await fetch('http://localhost:3000/api/auth/logout', {
-      method: 'POST',
-      credentials: 'include',
-    });
-    setUser(null);
-  };
-
-  return { user, loading, login, logout };
-}
-
-// Utilisation dans un composant
-function LoginForm() {
-  const { login } = useAuth();
-  
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      await login(email, password);
-      // Rediriger vers le dashboard
-    } catch (error) {
-      console.error('Login error:', error);
-    }
-  };
-
-  return <form onSubmit={handleSubmit}>...</form>;
-}
-```
-
-### Axios Configuration
-
-```javascript
-import axios from 'axios';
-
-const api = axios.create({
-  baseURL: 'http://localhost:3000/api',
-  withCredentials: true, // Important pour les cookies
-});
-
-// Intercepteur pour gérer les erreurs
-api.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    if (error.response?.status === 401) {
-      // Token expiré, essayer de refresh
-      try {
-        await api.post('/auth/refresh');
-        // Réessayer la requête originale
-        return api.request(error.config);
-      } catch (refreshError) {
-        // Redirect to login
-        window.location.href = '/login';
-      }
-    }
-    return Promise.reject(error);
-  }
-);
-
-// Exemples d'utilisation
-export const authAPI = {
-  login: (email, password) => api.post('/auth/login', { email, password }),
-  logout: () => api.post('/auth/logout'),
-  register: (userData) => api.post('/auth/register', userData),
-};
-
-export const eventsAPI = {
-  getAll: () => api.get('/events/all'),
-  getById: (id) => api.get(`/events/${id}`),
-  create: (data) => api.post('/events', data),
-  update: (id, data) => api.put(`/events/${id}`, data),
-  delete: (id) => api.delete(`/events/${id}`),
-};
-
-export const registrationsAPI = {
-  register: (eventId) => api.post('/event-registrations', { event_id: eventId }),
-  unregister: (eventId) => api.delete(`/event-registrations/${eventId}`),
-  getMyEvents: () => api.get('/event-registrations/my-events'),
-  checkRegistration: (eventId) => api.get(`/event-registrations/check/${eventId}`),
-};
-```
-
----
-
-## Notes importantes
-
-### Sécurité
-
-- Les tokens sont stockés dans des cookies **HttpOnly** (protection XSS)
-- Cookies configurés avec **SameSite=Strict** (protection CSRF)
-- Utilisation de **Secure** en production (HTTPS uniquement)
-- Mots de passe hashés avec **Argon2id**
-- Refresh tokens révoqués lors du logout
-
-### Best Practices
-
-1. **Toujours** utiliser `credentials: 'include'` dans les requêtes frontend
-2. **Ne jamais** stocker les tokens dans localStorage
-3. **Gérer** le refresh automatique des tokens expirés
-4. **Valider** toutes les entrées utilisateur côté serveur
-5. **Logger** les erreurs mais ne pas exposer les détails sensibles
-
-### Performance
-
-- Index créés sur les colonnes fréquemment interrogées
-- Transactions utilisées pour les opérations multi-tables
-- Triggers automatiques pour `updated_at`
 
 ---
 

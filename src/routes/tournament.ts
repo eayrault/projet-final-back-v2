@@ -11,6 +11,7 @@ import {
   type TournamentUpdate,
   TournamentUpdateSchema,
 } from "../models/Tournament.js";
+import { authenticate } from "../plugins/auth.js";
 
 export default async function tournamentRoutes(app: FastifyInstance) {
   app.get(
@@ -29,11 +30,12 @@ export default async function tournamentRoutes(app: FastifyInstance) {
           SELECT 
             t.id,
             t.name,
-            t.descriptions,
+            t.description,
             t.attendees,
             t.game_id,
             t.event_id,
             t.start_date,
+            t.end_date,
             t.created_at,
             t.updated_at,
             g.name as game_name,
@@ -75,11 +77,12 @@ export default async function tournamentRoutes(app: FastifyInstance) {
           SELECT 
             t.id,
             t.name,
-            t.descriptions,
+            t.description,
             t.attendees,
             t.game_id,
             t.event_id,
             t.start_date,
+            t.end_date,
             t.created_at,
             t.updated_at,
             g.name as game_name,
@@ -116,7 +119,7 @@ export default async function tournamentRoutes(app: FastifyInstance) {
     },
     async (request, reply) => {
       try {
-        const { name, descriptions, attendees, game_id, event_id, start_date } =
+        const { name, description, game_id, event_id, start_date, end_date } =
           request.body;
 
         const gameExists = await sql`
@@ -134,10 +137,10 @@ export default async function tournamentRoutes(app: FastifyInstance) {
         }
 
         const newTournament = (await sql`
-          INSERT INTO tournaments (name, descriptions, attendees, game_id, event_id, start_date)
-          VALUES (${name}, ${descriptions || null}, ${
-          attendees || 0
-        }, ${game_id}, ${event_id}, ${start_date})
+          INSERT INTO tournaments (name, description, attendees, game_id, event_id, start_date, end_date)
+          VALUES (${name}, ${
+          description || null
+        }, 0, ${game_id}, ${event_id}, ${start_date}, ${end_date})
           RETURNING *
         `) as Tournament[];
 
@@ -201,15 +204,15 @@ export default async function tournamentRoutes(app: FastifyInstance) {
           SET ${sql(
             updates,
             "name",
-            "descriptions",
-            "attendees",
+            "description",
             "game_id",
             "event_id",
-            "start_date"
+            "start_date",
+            "end_date"
           )}
           WHERE id = ${id}
           RETURNING *
-        `) as Tournament[];
+        `) as unknown as Tournament[];
 
         return reply.send(updatedTournament[0]);
       } catch (error) {

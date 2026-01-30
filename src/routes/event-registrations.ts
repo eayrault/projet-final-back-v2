@@ -178,7 +178,7 @@ export default async function eventRegistrationRoutes(app: FastifyInstance) {
 	app.get<{
     Params: { eventId: string };
   }>(
-    "/event/:eventId/participants",
+    "/:eventId/participants",
     {
       schema: {
         params: z.object({
@@ -191,7 +191,7 @@ export default async function eventRegistrationRoutes(app: FastifyInstance) {
               username: z.string(),
               first_name: z.string(),
               last_name: z.string(),
-              registered_at: z.string(),
+              registered_at: z.date(),
             })
           ),
         },
