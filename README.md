@@ -24,6 +24,8 @@ pnpm build
 node /dist/index.js
 ```
 
+---
+
 ## Configuration
 
 ### Variables d'environnement
@@ -44,12 +46,6 @@ PORT=3000
 JWT_SECRET=your-secret-key-here
 ```
 
-### Base URL
-
-```
-http://localhost:3000/api
-```
-
 ### Format des données
 
 - **Dates** : Format ISO 8601 (`2026-01-01T10:00:00Z`)
@@ -65,18 +61,6 @@ L'API utilise des cookies HttpOnly pour l'authentification :
 - `accessToken` : Token JWT (durée : 1 heure)
 - `refreshToken` : Token de rafraîchissement (durée : 7 jours)
 
-### Frontend Configuration
-
-```javascript
-// Fetch API
-fetch('http://localhost:3000/endpoint', {
-  credentials: 'include',
-});
-
-// Axios
-axios.defaults.withCredentials = true;
-```
-
 ### Rôles utilisateurs
 
 | Rôle | Description |
@@ -89,11 +73,49 @@ axios.defaults.withCredentials = true;
 
 ## Routes API
 
-### <a name="routes-authentification"></a> Authentification
+  - [Authentification](#routes-authentification)
+    - [POST /auth/register](#post-authregister)
+    - [POST /auth/login](#post-authlogin)
+    - [POST /auth/logout](#post-authlogout)
+    - [POST /auth/refresh](#post-authrefresh)
+    - [DELETE /auth/revoke-all-tokens](#revoke-all-tokens)
+  - [Utilisateurs](#routes-utilisateurs)
+    - [GET /user](#get-user)
+    - [GET /user/:id](#get-userid)
+    - [PUT /user/:id](#put-userid)
+    - [DELETE /user/:id](#delete-userid)
+  - [Événements](#routes-événements)
+    - [GET /events/all](#get-eventsall)
+    - [GET /events/:id](#get-eventsid)
+    - [POST /events](#post-events)
+    - [PUT /events/:id](#put-eventsid)
+    - [DELETE /events/:id](#delete-eventsid)
+  - [Inscriptions aux événements](#routes-inscriptions)
+    - [POST /event-registrations](#post-event-registrations)
+    - [DELETE /event-registrations/:eventId](#delete-event-registrationseventid)
+    - [GET /event-registrations/my-events](#get-event-registrationsmy-events)
+    - [GET /event-registrations/event/:eventId/participants](#get-event-registrationseventeventidparticipants)
+    - [GET /event-registrations/check/:eventId](#get-event-registrationscheckeventid)
+  - [Tournois](#routes-tournois)
+    - [GET /tournament](#get-tournament)
+    - [GET /tournament/:id](#get-tournamentid)
+    - [POST /tournament](#post-tournament)
+    - [PUT /tournament/:id](#put-tournamentid)
+    - [DELETE /tournament/:id](#delete-tournamentid)
+  - [Jeux](#routes-jeux)
+    - [GET /games/all](#get-gamesall)
+    - [GET /games/:id](#get-gamesid)
+    - [POST /games](#post-games)
+    - [PUT /games/:id](#put-gamesid)
+    - [DELETE /games/:id](#delete-gamesid)
+
+### <a name="routes-authentification"></a>Authentification
 
 **Base URL:** `/api/auth`
 
-#### `POST /auth/register`
+---
+
+#### <a name="post-authregister"></a>`POST /auth/register`
 
 Créer un nouveau compte utilisateur.
 
@@ -111,14 +133,8 @@ Créer un nouveau compte utilisateur.
 **Response (201):**
 ```json
 {
-  "id": "550e8400-e29b-41d4-a716-446655440000",
   "username": "john_doe",
-  "first_name": "John",
-  "last_name": "Doe",
-  "email": "john@example.com",
-  "role": "user",
-  "created_at": "2026-01-01T10:00:00Z",
-  "updated_at": "2026-01-01T10:00:00Z"
+  "email": "john@example.com"
 }
 ```
 
@@ -128,7 +144,7 @@ Créer un nouveau compte utilisateur.
 
 ---
 
-#### `POST /auth/login`
+#### <a name="post-authlogin"></a>`POST /auth/login`
 
 Se connecter avec un compte existant.
 
@@ -161,7 +177,7 @@ Se connecter avec un compte existant.
 
 ---
 
-#### `POST /auth/logout`
+#### <a name="post-authlogout"></a>`POST /auth/logout`
 
 Se déconnecter et révoquer les tokens.
 
@@ -183,7 +199,7 @@ Cookie: accessToken=...; refreshToken=...
 
 ---
 
-#### `POST /auth/refresh`
+#### <a name="post-authrefresh"></a>`POST /auth/refresh`
 
 Rafraîchir l'access token expiré.
 
@@ -209,11 +225,33 @@ Cookie: refreshToken=...
 
 ---
 
-### <a name="routes-utilisateurs"></a>👤 Utilisateurs
+#### <a name="revoke-all-tokens"></a>`DELETE /auth/revoke-all-tokens`
 
-**Base URL:** `/api/users`
+Révoquer tous les refresh tokens de la base de données (admin uniquement, en cas d'attaque).
 
-#### `GET /users/all`
+**Authentification requise (Admin uniquement)**
+
+**Response (200):**
+```json
+{
+  "message": "All refresh tokens have been revoked",
+  "revokedCount": 15
+}
+```
+
+**Erreurs:**
+- `401 Unauthorized` - Non authentifié
+- `403 Forbidden` - Permissions insuffisantes
+
+---
+
+### <a name="routes-utilisateurs"></a>Utilisateurs
+
+**Base URL:** `/api/user`
+
+---
+
+#### <a name="get-user"></a>`GET /user`
 
 Récupérer tous les utilisateurs.
 
@@ -225,6 +263,7 @@ Récupérer tous les utilisateurs.
     "username": "john_doe",
     "first_name": "John",
     "last_name": "Doe",
+    "email": "john@example.com",
     "role": "user",
     "created_at": "2026-01-01T10:00:00Z",
     "updated_at": "2026-01-01T10:00:00Z"
@@ -234,7 +273,7 @@ Récupérer tous les utilisateurs.
 
 ---
 
-#### `GET /users/:id`
+#### <a name="get-userid"></a>`GET /user/:id`
 
 Récupérer un utilisateur par son ID.
 
@@ -260,7 +299,7 @@ Récupérer un utilisateur par son ID.
 
 ---
 
-#### `PUT /users/:id`
+#### <a name="put-userid"></a>`PUT /user/:id`
 
 Mettre à jour un utilisateur.
 
@@ -275,7 +314,8 @@ Mettre à jour un utilisateur.
   "username": "new_username",
   "first_name": "NewName",
   "last_name": "NewLastName",
-  "email": "newemail@example.com"
+  "email": "newemail@example.com",
+  "password": "NewPassword123!"
 }
 ```
 
@@ -300,7 +340,7 @@ Mettre à jour un utilisateur.
 
 ---
 
-#### `DELETE /users/:id`
+#### <a name="delete-userid"></a>`DELETE /user/:id`
 
 Supprimer un utilisateur.
 
@@ -323,11 +363,13 @@ Supprimer un utilisateur.
 
 ---
 
-### <a name="routes-événements"></a> Événements
+### <a name="routes-événements"></a>Événements
 
 **Base URL:** `/api/events`
 
-#### `GET /events/all`
+---
+
+#### <a name="get-eventsall"></a>`GET /events/all`
 
 Récupérer tous les événements.
 
@@ -339,7 +381,7 @@ Récupérer tous les événements.
     "name": "Evo 2026",
     "description": "Événement en France organisé par EVO",
     "attendees": 150,
-    "start_date": "2026-01-01T10:00:00Z",
+    "start_date": "2026-06-15T10:00:00Z",
     "created_at": "2026-01-01T10:00:00Z",
     "updated_at": "2026-01-01T10:00:00Z"
   }
@@ -348,7 +390,7 @@ Récupérer tous les événements.
 
 ---
 
-#### `GET /events/:id`
+#### <a name="get-eventsid"></a>`GET /events/:id`
 
 Récupérer un événement par son ID.
 
@@ -373,7 +415,7 @@ Récupérer un événement par son ID.
 
 ---
 
-#### `POST /events`
+#### <a name="post-events"></a>`POST /events`
 
 Créer un nouvel événement.
 
@@ -407,7 +449,7 @@ Créer un nouvel événement.
 
 ---
 
-#### `PUT /events/:id`
+#### <a name="put-eventsid"></a>`PUT /events/:id`
 
 Mettre à jour un événement.
 
@@ -421,7 +463,7 @@ Mettre à jour un événement.
 {
   "name": "Evo 2026 - Updated",
   "description": "Nouvelle description",
-  "start_date": "2026-01-01T10:00:00Z"
+  "start_date": "2026-06-15T10:00:00Z"
 }
 ```
 
@@ -432,7 +474,7 @@ Mettre à jour un événement.
   "name": "Evo 2026 - Updated",
   "description": "Nouvelle description",
   "attendees": 150,
-  "start_date": "2026-01-01T10:00:00Z",
+  "start_date": "2026-06-15T10:00:00Z",
   "created_at": "2026-01-01T10:00:00Z",
   "updated_at": "2026-01-01T10:00:00Z"
 }
@@ -440,7 +482,7 @@ Mettre à jour un événement.
 
 ---
 
-#### `DELETE /events/:id`
+#### <a name="delete-eventsid"></a>`DELETE /events/:id`
 
 Supprimer un événement.
 
@@ -463,11 +505,13 @@ Supprimer un événement.
 
 ---
 
-### <a name="routes-inscriptions"></a> Inscriptions aux événements
+### <a name="routes-inscriptions"></a>Inscriptions aux événements
 
 **Base URL:** `/api/event-registrations`
 
-#### `POST /event-registrations`
+---
+
+#### <a name="post-event-registrations"></a>`POST /event-registrations`
 
 S'inscrire à un événement.
 
@@ -500,7 +544,7 @@ S'inscrire à un événement.
 
 ---
 
-#### `DELETE /event-registrations/:eventId`
+#### <a name="delete-event-registrationseventid"></a>`DELETE /event-registrations/:eventId`
 
 Se désinscrire d'un événement.
 
@@ -522,7 +566,7 @@ Se désinscrire d'un événement.
 
 ---
 
-#### `GET /event-registrations/my-events`
+#### <a name="get-event-registrationsmy-events"></a>`GET /event-registrations/my-events`
 
 Récupérer les événements auxquels l'utilisateur est inscrit.
 
@@ -538,7 +582,7 @@ Récupérer les événements auxquels l'utilisateur est inscrit.
     "registered_at": "2026-01-01T10:00:00Z",
     "event_name": "Evo 2026",
     "event_description": "Événement en France organisé par EVO",
-    "event_start_date": "2026-01-01T10:00:00Z",
+    "event_start_date": "2026-06-15T10:00:00Z",
     "username": "john_doe"
   }
 ]
@@ -546,7 +590,7 @@ Récupérer les événements auxquels l'utilisateur est inscrit.
 
 ---
 
-#### `GET /event-registrations/event/:eventId/participants`
+#### <a name="get-event-registrationseventeventidparticipants"></a>`GET /event-registrations/event/:eventId/participants`
 
 Récupérer la liste des participants d'un événement.
 
@@ -571,7 +615,7 @@ Récupérer la liste des participants d'un événement.
 
 ---
 
-#### `GET /event-registrations/check/:eventId`
+#### <a name="get-event-registrationscheckeventid"></a>`GET /event-registrations/check/:eventId`
 
 Vérifier si l'utilisateur est inscrit à un événement.
 
@@ -589,11 +633,13 @@ Vérifier si l'utilisateur est inscrit à un événement.
 
 ---
 
-### <a name="routes-tournois"></a> Tournois
+### <a name="routes-tournois"></a>Tournois
 
-**Base URL:** `/api/tournaments`
+**Base URL:** `/api/tournament`
 
-#### `GET /tournaments/all`
+---
+
+#### <a name="get-tournament"></a>`GET /tournament`
 
 Récupérer tous les tournois avec détails (jeu et événement).
 
@@ -603,11 +649,12 @@ Récupérer tous les tournois avec détails (jeu et événement).
   {
     "id": "880e8400-e29b-41d4-a716-446655440000",
     "name": "Tournoi Guilty Gear 2026",
-    "descriptions": "Tournoi Guilty Gear -Strive-",
+    "description": "Tournoi Guilty Gear -Strive-",
     "attendees": 32,
     "game_id": "990e8400-e29b-41d4-a716-446655440000",
     "event_id": "550e8400-e29b-41d4-a716-446655440000",
-    "start_date": "2026-01-01T10:00:00Z",
+    "start_date": "2026-06-15T14:00:00Z",
+    "end_date": "2026-06-15T18:00:00Z",
     "created_at": "2026-01-01T10:00:00Z",
     "updated_at": "2026-01-01T10:00:00Z",
     "game_name": "Guilty Gear -Strive-",
@@ -618,7 +665,7 @@ Récupérer tous les tournois avec détails (jeu et événement).
 
 ---
 
-#### `GET /tournaments/:id`
+#### <a name="get-tournamentid"></a>`GET /tournament/:id`
 
 Récupérer un tournoi par son ID avec détails.
 
@@ -630,11 +677,12 @@ Récupérer un tournoi par son ID avec détails.
 {
   "id": "880e8400-e29b-41d4-a716-446655440000",
   "name": "Tournoi Guilty Gear 2026",
-  "descriptions": "Tournoi Guilty Gear -Strive-",
+  "description": "Tournoi Guilty Gear -Strive-",
   "attendees": 32,
   "game_id": "990e8400-e29b-41d4-a716-446655440000",
   "event_id": "550e8400-e29b-41d4-a716-446655440000",
   "start_date": "2026-06-15T14:00:00Z",
+  "end_date": "2026-06-15T18:00:00Z",
   "created_at": "2026-01-01T10:00:00Z",
   "updated_at": "2026-01-01T10:00:00Z",
   "game_name": "Guilty Gear -Strive-",
@@ -647,7 +695,7 @@ Récupérer un tournoi par son ID avec détails.
 
 ---
 
-#### `POST /tournaments`
+#### <a name="post-tournament"></a>`POST /tournament`
 
 Créer un nouveau tournoi.
 
@@ -657,11 +705,12 @@ Créer un nouveau tournoi.
 ```json
 {
   "name": "Tournoi Guilty Gear 2026",
-  "descriptions": "Tournoi Guilty Gear -Strive-",
+  "description": "Tournoi Guilty Gear -Strive-",
   "attendees": 0,
   "game_id": "990e8400-e29b-41d4-a716-446655440000",
   "event_id": "550e8400-e29b-41d4-a716-446655440000",
-  "start_date": "2026-06-15T14:00:00Z"
+  "start_date": "2026-06-15T14:00:00Z",
+  "end_date": "2026-06-15T18:00:00Z"
 }
 ```
 
@@ -670,11 +719,12 @@ Créer un nouveau tournoi.
 {
   "id": "880e8400-e29b-41d4-a716-446655440000",
   "name": "Tournoi Guilty Gear 2026",
-  "descriptions": "Tournoi Guilty Gear -Strive-",
+  "description": "Tournoi Guilty Gear -Strive-",
   "attendees": 0,
   "game_id": "990e8400-e29b-41d4-a716-446655440000",
   "event_id": "550e8400-e29b-41d4-a716-446655440000",
-  "start_date": "2026-01-01T10:00:00Z",
+  "start_date": "2026-06-15T14:00:00Z",
+  "end_date": "2026-06-15T18:00:00Z",
   "created_at": "2026-01-01T10:00:00Z",
   "updated_at": "2026-01-01T10:00:00Z"
 }
@@ -687,7 +737,7 @@ Créer un nouveau tournoi.
 
 ---
 
-#### `PUT /tournaments/:id`
+#### <a name="put-tournamentid"></a>`PUT /tournament/:id`
 
 Mettre à jour un tournoi.
 
@@ -701,7 +751,8 @@ Mettre à jour un tournoi.
 {
   "name": "Tournoi Guilty Gear 2026 - Finale",
   "attendees": 64,
-  "start_date": "2026-01-01T10:00:00Z"
+  "start_date": "2026-06-15T14:00:00Z",
+  "end_date": "2026-06-15T20:00:00Z"
 }
 ```
 
@@ -710,11 +761,12 @@ Mettre à jour un tournoi.
 {
   "id": "880e8400-e29b-41d4-a716-446655440000",
   "name": "Tournoi Guilty Gear 2026 - Finale",
-  "descriptions": "Tournoi Smash Bros Ultimate",
+  "description": "Tournoi Guilty Gear -Strive-",
   "attendees": 64,
   "game_id": "990e8400-e29b-41d4-a716-446655440000",
   "event_id": "550e8400-e29b-41d4-a716-446655440000",
-  "start_date": "2026-01-01T10:00:00Z",
+  "start_date": "2026-06-15T14:00:00Z",
+  "end_date": "2026-06-15T20:00:00Z",
   "created_at": "2026-01-01T10:00:00Z",
   "updated_at": "2026-01-01T10:00:00Z"
 }
@@ -722,7 +774,7 @@ Mettre à jour un tournoi.
 
 ---
 
-#### `DELETE /tournaments/:id`
+#### <a name="delete-tournamentid"></a>`DELETE /tournament/:id`
 
 Supprimer un tournoi.
 
@@ -745,11 +797,13 @@ Supprimer un tournoi.
 
 ---
 
-### <a name="routes-jeux"></a> Jeux
+### <a name="routes-jeux"></a>Jeux
 
 **Base URL:** `/api/games`
 
-#### `GET /games/all`
+---
+
+#### <a name="get-gamesall"></a>`GET /games/all`
 
 Récupérer tous les jeux.
 
@@ -759,7 +813,7 @@ Récupérer tous les jeux.
   {
     "id": "990e8400-e29b-41d4-a716-446655440000",
     "name": "Guilty Gear -Strive-",
-    "descriptions": "Jeu de combat par Arc System Works",
+    "description": "Jeu de combat par Arc System Works",
     "created_at": "2026-01-01T10:00:00Z",
     "updated_at": "2026-01-01T10:00:00Z"
   }
@@ -768,7 +822,7 @@ Récupérer tous les jeux.
 
 ---
 
-#### `GET /games/:id`
+#### <a name="get-gamesid"></a>`GET /games/:id`
 
 Récupérer un jeu par son ID.
 
@@ -780,7 +834,7 @@ Récupérer un jeu par son ID.
 {
   "id": "990e8400-e29b-41d4-a716-446655440000",
   "name": "Guilty Gear -Strive-",
-  "descriptions": "Jeu de combat par Arc System Works",
+  "description": "Jeu de combat par Arc System Works",
   "created_at": "2026-01-01T10:00:00Z",
   "updated_at": "2026-01-01T10:00:00Z"
 }
@@ -791,7 +845,7 @@ Récupérer un jeu par son ID.
 
 ---
 
-#### `POST /games`
+#### <a name="post-games"></a>`POST /games`
 
 Créer un nouveau jeu.
 
@@ -801,7 +855,7 @@ Créer un nouveau jeu.
 ```json
 {
   "name": "Guilty Gear -Strive-",
-  "descriptions": "Jeu de combat par Arc System Works"
+  "description": "Jeu de combat par Arc System Works"
 }
 ```
 
@@ -810,7 +864,7 @@ Créer un nouveau jeu.
 {
   "id": "990e8400-e29b-41d4-a716-446655440000",
   "name": "Guilty Gear -Strive-",
-  "descriptions": "Jeu de combat par Arc System Works",
+  "description": "Jeu de combat par Arc System Works",
   "created_at": "2026-01-01T10:00:00Z",
   "updated_at": "2026-01-01T10:00:00Z"
 }
@@ -823,7 +877,7 @@ Créer un nouveau jeu.
 
 ---
 
-#### `PUT /games/:id`
+#### <a name="put-gamesid"></a>`PUT /games/:id`
 
 Mettre à jour un jeu.
 
@@ -836,7 +890,7 @@ Mettre à jour un jeu.
 ```json
 {
   "name": "SSBU",
-  "descriptions": "Nouvelle description"
+  "description": "Nouvelle description"
 }
 ```
 
@@ -845,7 +899,7 @@ Mettre à jour un jeu.
 {
   "id": "990e8400-e29b-41d4-a716-446655440000",
   "name": "SSBU",
-  "descriptions": "Nouvelle description",
+  "description": "Nouvelle description",
   "created_at": "2026-01-01T10:00:00Z",
   "updated_at": "2026-01-01T10:00:00Z"
 }
@@ -853,7 +907,7 @@ Mettre à jour un jeu.
 
 ---
 
-#### `DELETE /games/:id`
+#### <a name="delete-gamesid"></a>`DELETE /games/:id`
 
 Supprimer un jeu.
 
@@ -912,18 +966,19 @@ events
 games
 ├── id (UUID, PK)
 ├── name (TEXT, UNIQUE)
-├── descriptions (TEXT)
+├── description (TEXT)
 ├── created_at (TIMESTAMP)
 └── updated_at (TIMESTAMP)
 
 tournaments
 ├── id (UUID, PK)
 ├── name (TEXT)
-├── descriptions (TEXT)
+├── description (TEXT)
 ├── attendees (INTEGER)
 ├── game_id (UUID, FK → games)
 ├── event_id (UUID, FK → events)
 ├── start_date (TIMESTAMP)
+├── end_date (TIMESTAMP)
 ├── created_at (TIMESTAMP)
 └── updated_at (TIMESTAMP)
 
@@ -941,3 +996,9 @@ matches
 ├── created_at (TIMESTAMP)
 └── updated_at (TIMESTAMP)
 ```
+
+---
+
+## Licence
+
+MIT
