@@ -40,14 +40,6 @@ app.register(gamesRoutes, { prefix: "/games" });
 app.register(eventRegistrationRoutes, { prefix: "/event-registrations" });
 app.register(cookie);
 
-// app.setErrorHandler((error: FastifyError, _request, reply) => {
-//   app.log.error(error);
-//   reply.status(error.statusCode || 500).send({
-//     message: error.message,
-//     code: error.code,
-//   });
-// });
-
 const start = async () => {
 	try {
     const port = Number(process.env.PORT);

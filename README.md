@@ -4,7 +4,7 @@ API REST pour la gestion d'événements gaming, tournois et inscriptions.
 
 ## Installation
 
-Prérequi : NodeJS, Docker, pnpm
+Prérequis : NodeJS, Docker, pnpm
 
 ```bash
 # Cloner le repository

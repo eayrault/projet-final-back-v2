@@ -1,5 +1,4 @@
 import type { FastifyInstance } from "fastify";
-import { ZodTypeProvider } from "fastify-type-provider-zod";
 import { z } from "zod";
 import sql from "../db/db.js";
 import {

@@ -22,8 +22,7 @@
 		"test": "vitest run",
 		"start": "docker compose -f .\\docker\\docker-compose.yml up -d",
 		"down": "docker compose -f .\\docker\\docker-compose.yml down && docker volume rm projet-final-back",
-		"psql": "docker compose -f .\\docker\\docker-compose.yml exec db psql -U eliot -d projet-final-back",
-		"restart": "docker compose -f .\\docker\\docker-compose.yml restart"
+		"psql": "docker compose -f .\\docker\\docker-compose.yml exec db psql -U eliot -d projet-final-back"
 	},
 	"dependencies": {
 		"@fastify/cookie": "^11.0.2",
