@@ -21,8 +21,15 @@
 		"autofix": "biome check --write",
 		"test": "vitest run",
 		"start": "docker compose -f .\\docker\\docker-compose.yml up -d",
+		"start:db": "docker compose -f .\\docker\\docker-compose.yml up -d db",
+		"start:api": "docker compose -f .\\docker\\docker-compose.yml up -d api",
+		"start:build": "docker compose -f .\\docker\\docker-compose.yml up -d --build",
 		"down": "docker compose -f .\\docker\\docker-compose.yml down && docker volume rm projet-final-back",
-		"psql": "docker compose -f .\\docker\\docker-compose.yml exec db psql -U eliot -d projet-final-back"
+		"psql": "docker compose -f .\\docker\\docker-compose.yml exec db psql -U eliot -d projet-final-back",
+		"docker:restart": "pnpm down && pnpm start:build",
+		"logs": "docker compose -f .\\docker\\docker-compose.yml logs -f",
+		"logs:api": "docker compose -f .\\docker\\docker-compose.yml logs -f api",
+		"logs:db": "docker compose -f .\\docker\\docker-compose.yml logs -f db"
 	},
 	"dependencies": {
 		"@fastify/cookie": "^11.0.2",

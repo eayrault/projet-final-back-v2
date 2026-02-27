@@ -14,7 +14,9 @@ import tournamentRoutes from "./routes/tournament.js";
 import userRoutes from "./routes/user.js";
 
 try {
-  process.loadEnvFile();
+  if (process.env.NODE_ENV !== "production") {
+    process.loadEnvFile();
+  }
 } catch (_) {
   console.warn(".env file not found. Using system environment variables.");
 }

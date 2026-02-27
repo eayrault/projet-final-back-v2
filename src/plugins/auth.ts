@@ -5,7 +5,9 @@ import type { JWTPayload } from "jose";
 import * as jose from "jose";
 import sql from "../db/db.js";
 
-process.loadEnvFile();
+if (process.env.NODE_ENV !== "production") {
+  process.loadEnvFile();
+}
 
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET);
 

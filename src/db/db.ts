@@ -1,6 +1,8 @@
 import postgres from "postgres";
 
-process.loadEnvFile();
+if (process.env.NODE_ENV !== "production") {
+  process.loadEnvFile();
+}
 
 const connectionString =
 	process.env.DATABASE_URL ||

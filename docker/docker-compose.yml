@@ -12,6 +12,24 @@ services:
       POSTGRES_PASSWORD: motdepasse
       POSTGRES_USER: eliot
       POSTGRES_DB: projet-final-back
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U eliot -d projet-final-back"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - 3000:3000
+    env_file:
+      - ../.env.docker
+    depends_on:
+      db:
+        condition: service_healthy
 
 volumes:
   pg_data:
