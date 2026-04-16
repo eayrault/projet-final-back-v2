@@ -45,7 +45,7 @@ app.register(cookie);
 const start = async () => {
 	try {
     const port = Number(process.env.PORT);
-    await app.listen({ port, host: "127.0.0.1" });
+    await app.listen({ port, host: "0.0.0.0" });
     console.log(`Server running on port ${port}`);
   } catch (err) {
     app.log.error(err);

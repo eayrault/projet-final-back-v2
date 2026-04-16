@@ -42,6 +42,52 @@ function formatUserResponse(user: DatabaseUser) {
 
 export default async function userRoutes(app: FastifyInstance) {
   app.get(
+    "/me",
+    {
+      schema: {
+        response: {
+          200: UserResponseSchema,
+          401: z.object({ message: z.string() }),
+          404: z.object({ message: z.string() }),
+        },
+      },
+    },
+    async (request, reply) => {
+      const authHeader = request.headers.authorization;
+
+      if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        return reply.status(401).send({ message: "No token provided" });
+      }
+
+      const token = authHeader.slice(7);
+
+      try {
+        const { jwtVerify } = await import("jose");
+        const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET);
+        const { payload } = await jwtVerify(token, JWT_SECRET);
+        const userId = (payload as { userId: string }).userId;
+
+        const result = (await sql`
+          SELECT u.*, ua.email
+          FROM users u
+          INNER JOIN user_auth ua ON u.id = ua.user_id
+          WHERE u.id = ${userId}
+        `) as DatabaseUser[];
+
+        const user = result[0];
+
+        if (!user) {
+          return reply.status(404).send({ message: "User not found" });
+        }
+
+        return reply.send(formatUserResponse(user));
+      } catch {
+        return reply.status(401).send({ message: "Invalid token" });
+      }
+    }
+  );
+
+  app.get(
     "/",
     {
       schema: {
