@@ -134,7 +134,7 @@ export default async function authRoutes(app: FastifyInstance) {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "strict",
-        maxAge: 3, // 1 heure
+        maxAge: 3600, // 1 heure
         path: "/",
       });
 
@@ -164,7 +164,8 @@ export default async function authRoutes(app: FastifyInstance) {
         await revokeRefreshToken(refreshToken);
       }
 
-      reply.clearCookie("accessToken");
+      reply.clearCookie("accessToken", { path: "/" });
+      reply.clearCookie("refreshToken", { path: "/" });
 
       return reply.send({ message: "Logout successful" });
     } catch (error) {

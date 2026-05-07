@@ -28,7 +28,7 @@ services:
     env_file:
       - ../.env.docker
     environment:
-      - FRONTEND_URL=http://localhost:8080
+      - FRONTEND_URL=http://localhost:4173
     depends_on:
       db:
         condition: service_healthy
@@ -39,7 +39,7 @@ services:
       dockerfile: dockerfile
     restart: always
     ports:
-      - 8080:80
+      - 4173:80
     depends_on:
       - api
 

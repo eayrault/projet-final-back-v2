@@ -53,13 +53,11 @@ export default async function userRoutes(app: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const authHeader = request.headers.authorization;
+      const token = request.cookies.accessToken;
 
-      if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      if (!token) {
         return reply.status(401).send({ message: "No token provided" });
       }
-
-      const token = authHeader.slice(7);
 
       try {
         const { jwtVerify } = await import("jose");
