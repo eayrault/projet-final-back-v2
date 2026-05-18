@@ -79,6 +79,19 @@ export default async function eventsRoutes(app: FastifyInstance) {
     async (request, reply) => {
       const { name, description, start_date, end_date } = request.body;
 
+      const now = new Date();
+      if (new Date(start_date) < now) {
+        return reply.status(400).send({
+          message: "You cannot create an event with a start date in the past.",
+        });
+      }
+
+      if (new Date(end_date) <= new Date(start_date)) {
+        return reply.status(400).send({
+          message: "The end date must be after the start date.",
+        });
+      }
+
       const [newEvent] = await sql`
         INSERT INTO events (name, description, start_date, end_date)
         VALUES (${name}, ${description ?? null}, ${start_date}, ${end_date})
