@@ -9,7 +9,7 @@ users: id, username, first_name, last_name, role, created_at, updated_at, #id 2 
 :
 register_to: #id 1 > users > id, _#id 2 > events > id
 :
-events: id, name, description, attendees, start_date, end_date, created_at, updated_at
+events: id, name, description, attendees, start_date, end_date, created_at, updated_at, _#id 2 > users > id
 :::::
 
 

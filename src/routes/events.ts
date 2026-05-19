@@ -13,6 +13,27 @@ import { authenticate, requireRole } from "../plugins/auth.js";
 
 export default async function eventsRoutes(app: FastifyInstance) {
   app.get(
+    "/my-events",
+    {
+      preHandler: authenticate,
+      schema: {
+        response: {
+          200: z.array(EventResponseSchema),
+        },
+      },
+    },
+    async (request, reply) => {
+      const userId = request.currentUser.userId;
+      const events = await sql`
+        SELECT * FROM events
+        WHERE created_by = ${userId}
+        ORDER BY start_date ASC
+      `;
+      return reply.send(events);
+    }
+  );
+
+  app.get(
     "/",
     {
       schema: {
@@ -93,8 +114,10 @@ export default async function eventsRoutes(app: FastifyInstance) {
       }
 
       const [newEvent] = await sql`
-        INSERT INTO events (name, description, start_date, end_date)
-        VALUES (${name}, ${description ?? null}, ${start_date}, ${end_date})
+        INSERT INTO events (name, description, start_date, end_date, created_by)
+        VALUES (${name}, ${description ?? null}, ${start_date}, ${end_date}, ${
+        request.currentUser.userId
+      })
         RETURNING *
       `;
 

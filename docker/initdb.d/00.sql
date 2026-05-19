@@ -47,6 +47,7 @@ CREATE TABLE IF NOT EXISTS events (
     name TEXT NOT NULL,
     description TEXT,
     attendees INTEGER DEFAULT 0,
+    created_by UUID REFERENCES users(id) ON DELETE SET NULL,
     start_date TIMESTAMP WITH TIME ZONE NOT NULL,
     end_date TIMESTAMP WITH TIME ZONE NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,

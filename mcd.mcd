@@ -11,7 +11,7 @@ register_to, 0N users, 0N events
 events: id, name, description, attendees, start_date, end_date, created_at, updated_at
 contains, 11 tournaments, 1N events
 :
-
+creates, 0N users, 01 events
 refresh_tokens: id, user_id, token_hash, expires_at, created_at, updated_at
 :
 :

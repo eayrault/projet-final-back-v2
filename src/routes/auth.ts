@@ -164,8 +164,14 @@ export default async function authRoutes(app: FastifyInstance) {
         await revokeRefreshToken(refreshToken);
       }
 
-      reply.clearCookie("accessToken", { path: "/" });
-      reply.clearCookie("refreshToken", { path: "/" });
+      const cookieOptions = {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict" as const,
+        path: "/",
+      };
+      reply.clearCookie("accessToken", cookieOptions);
+      reply.clearCookie("refreshToken", cookieOptions);
 
       return reply.send({ message: "Logout successful" });
     } catch (error) {
