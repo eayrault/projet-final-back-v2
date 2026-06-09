@@ -1,0 +1,19 @@
+%%mocodo
+
+users: id, username, first_name, last_name, role, created_at, updated_at
+:
+user_auth: _#user_id > users > id, email, password_hash
+:
+refresh_tokens: id, #user_id > users > id, token_hash, expires_at, created_at
+
+:
+games: id, name, description, created_at, updated_at
+:
+events: id, name, description, attendees, start_date, end_date, created_at, updated_at, #created_by > users > id
+
+:
+tournaments: id, name, description, attendees, start_date, end_date, created_at, updated_at, #game_id > games > id, #event_id > events > id
+:
+matches: id, score, created_at, updated_at, #tournament_id > tournaments > id
+:
+event_registrations: _#user_id > users > id, _#event_id > events > id, registered_at
