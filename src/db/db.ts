@@ -1,7 +1,7 @@
 import postgres from "postgres";
 
 if (process.env.NODE_ENV !== "production") {
-  process.loadEnvFile();
+	process.loadEnvFile();
 }
 
 const connectionString =
