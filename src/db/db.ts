@@ -1,7 +1,11 @@
 import postgres from "postgres";
 
 if (process.env.NODE_ENV !== "production") {
-	process.loadEnvFile();
+  try {
+    process.loadEnvFile();
+  } catch {
+    // Pas de fichier .env (CI, Docker, etc.) : on utilise les variables système
+  }
 }
 
 const connectionString =
