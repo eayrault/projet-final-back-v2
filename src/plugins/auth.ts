@@ -6,7 +6,11 @@ import * as jose from "jose";
 import sql from "../db/db.js";
 
 if (process.env.NODE_ENV !== "production") {
-  process.loadEnvFile();
+  try {
+    process.loadEnvFile();
+  } catch {
+    // Pas de fichier .env (CI, Docker, etc.) : on utilise les variables système
+  }
 }
 
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET);
