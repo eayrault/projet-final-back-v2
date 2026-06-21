@@ -5,12 +5,10 @@ import {
   verifyPassword,
 } from "../../src/plugins/auth.js";
 
-// Ces tests nécessitent la variable JWT_SECRET dans l'environnement.
-// Vitest la charge automatiquement depuis le fichier .env si vitest.config.ts
-// est configuré avec envFile, ou on peut la définir ici directement.
-process.env.JWT_SECRET = "test-secret-key-for-unit-tests";
+process.env.JWT_SECRET =
+  "2e1160c1141deb77bb73e5cf57e61bc84af0fb77e432be6c3bdab9648c8b6acd6148a28534108324bc7f4423d8590bbe937301229a3b3364ecefbce986a3a2ba";
 
-// ─── hashPassword / verifyPassword ────────────────────────────────────────────
+// hashPassword / verifyPassword
 
 describe("hashPassword", () => {
   it("retourne une chaîne hachée différente du mot de passe en clair", async () => {
@@ -49,7 +47,7 @@ describe("verifyPassword", () => {
   });
 });
 
-// ─── generateToken ────────────────────────────────────────────────────────────
+// generateToken
 
 describe("generateToken", () => {
   const payload = {

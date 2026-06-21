@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { EventCreateSchema, EventUpdateSchema } from "../../src/models/Events.js";
 import { UserLoginSchema, UserRegisterSchema } from "../../src/models/User.js";
 
-// ─── UserRegisterSchema ───────────────────────────────────────────────────────
+// UserRegisterSchema
 
 describe("UserRegisterSchema", () => {
   const validUser = {
@@ -51,7 +51,7 @@ describe("UserRegisterSchema", () => {
   });
 });
 
-// ─── UserLoginSchema ──────────────────────────────────────────────────────────
+// UserLoginSchema
 
 describe("UserLoginSchema", () => {
   const validLogin = {
@@ -75,8 +75,7 @@ describe("UserLoginSchema", () => {
   });
 });
 
-// ─── EventCreateSchema ────────────────────────────────────────────────────────
-
+// EventCreateSchema
 describe("EventCreateSchema", () => {
   const validEvent = {
     name: "LAN Party 2025",
@@ -113,7 +112,7 @@ describe("EventCreateSchema", () => {
   });
 });
 
-// ─── EventUpdateSchema ────────────────────────────────────────────────────────
+// EventUpdateSchema
 
 describe("EventUpdateSchema", () => {
   it("accepte un body vide (tous les champs sont optionnels)", () => {
